@@ -1,0 +1,8 @@
+/home/oleg/Project/aruco-robot-localization/build/CMakeFiles/rebuild_cache.dir
+/home/oleg/Project/aruco-robot-localization/build/CMakeFiles/edit_cache.dir
+/home/oleg/Project/aruco-robot-localization/build/lib/CMakeFiles/rebuild_cache.dir
+/home/oleg/Project/aruco-robot-localization/build/lib/CMakeFiles/edit_cache.dir
+/home/oleg/Project/aruco-robot-localization/build/lib/CMakeFiles/aruco_robotino_localization_lib.dir
+/home/oleg/Project/aruco-robot-localization/build/tests/CMakeFiles/edit_cache.dir
+/home/oleg/Project/aruco-robot-localization/build/tests/CMakeFiles/rebuild_cache.dir
+/home/oleg/Project/aruco-robot-localization/build/tests/CMakeFiles/main_test.dir
