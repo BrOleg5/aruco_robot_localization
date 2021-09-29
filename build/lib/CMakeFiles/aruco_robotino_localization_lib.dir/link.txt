@@ -1,2 +1,0 @@
-/usr/bin/ar qc libaruco_robotino_localization_lib.a  CMakeFiles/aruco_robotino_localization_lib.dir/arucolocalization.cpp.o
-/usr/bin/ranlib libaruco_robotino_localization_lib.a

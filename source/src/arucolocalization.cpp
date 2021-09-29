@@ -1,4 +1,4 @@
-#include "arucolocalization.h"
+#include "arucolocalization.hpp"
 
 void td::TransferData::Angle(cv::Point2d* arucoCorner) {
 	if (arucoCorner[1].x >= arucoCorner[2].x) {

@@ -33,3 +33,5 @@
 
 # Directories
 .vscode/
+builds/
+install/
