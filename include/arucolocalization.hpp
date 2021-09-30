@@ -1,7 +1,10 @@
 #ifndef ARUCOLOCALIZATION_LIB
 #define ARUCOLOCALIZATION_LIB
 
-#define PI 3.14159265
+#ifndef PI
+#	define PI 3.14159265358979323846
+#endif
+
 #define MMperPIX_X 2.1659
 #define MMperPIX_Y 2.1131
 
