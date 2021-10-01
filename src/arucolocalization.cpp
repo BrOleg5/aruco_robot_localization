@@ -45,7 +45,7 @@ void td::TransferData::DeltaEigen() {
 	deltaEigenCartesian.y = delta.x * cos(currAngle / 180 * PI) * (-1) + delta.y * sin(currAngle / 180 * PI);
 }
 
-ArucoLocalization::ArucoLocalization(int cam_index, cv::aruco::PREDEFINED_DICTIONARY_NAME name) {
+ArucoLocalization::ArucoLocalization(int cam_index, cv::aruco::PREDEFINED_DICTIONARY_NAME dict_name) {
 	for (int i = 0; i < 3; i++) {
 		arucoCorner[i].x = 0;
 		arucoCorner[i].y = 0;
@@ -56,7 +56,7 @@ ArucoLocalization::ArucoLocalization(int cam_index, cv::aruco::PREDEFINED_DICTIO
 	webcam.set(cv::CAP_PROP_AUTOFOCUS, 0);
 	webcam.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
 	detector_parameters = cv::aruco::DetectorParameters::create();
-	dictionary = cv::aruco::getPredefinedDictionary(name);
+	dictionary = cv::aruco::getPredefinedDictionary(dict_name);
 
 	//Checking for the webcam to be connected 
 	if (webcam.isOpened()) {
@@ -66,10 +66,6 @@ ArucoLocalization::ArucoLocalization(int cam_index, cv::aruco::PREDEFINED_DICTIO
 		std::cout << "Webcam not connected." << std::endl;
 		exit(1);
 	}
-}
-
-ArucoLocalization::~ArucoLocalization() {
-	webcam.~VideoCapture();
 }
 
 bool ArucoLocalization::localizate(td::TransferData* data) {
@@ -112,7 +108,6 @@ bool ArucoLocalization::localizate(td::TransferData* data) {
 	}
 }
 
-//Call after localization (function localize).
 void ArucoLocalization::show_markers() {
 	//Resulting image to be shown                          
 	cv::Mat outputImage;

@@ -14,48 +14,137 @@
 #include "opencv2/imgproc.hpp"
 
 namespace td {
+
+	/**
+	 * @class TransferData
+	 * @brief Store robot's global coordinates and local coordinate change.
+	 */
 	class TransferData {
 		public:
+
+		/**
+		 * Current robot's global coordinate.
+		 */
 		cv::Point2d currGlobalCartesian;
+
+		/**
+		 * Previous robot's global coordinate.
+		 */
 		cv::Point2d prevGlobalCartesian;
+
+		/**
+		 * Current robot's rotation angle.
+		 */
 		double currAngle;
+
+		/**
+		 * Previous robot's rotation angle.
+		 */
 		double prevAngle;
-		double deltaAngle;
+
+		/**
+		 * Robot's local coordinate change.
+		 */
 		cv::Point2d deltaEigenCartesian;
 
+		/**
+		 * Robot's angle change.
+		 */
+		double deltaAngle;
+
+		/**
+		 * Initializtion each coordinate as zero.
+		 */
 		TransferData() : currGlobalCartesian(0, 0), prevGlobalCartesian(0, 0), currAngle(0),
 						 prevAngle(0), deltaAngle(0), deltaEigenCartesian(0, 0) {}
+		
 		~TransferData() {}
 
+		/**
+		 * Obtain robot's rotation angle from aruco corners.
+		 * 
+		 * @param arucoCorner array of aruco corners.
+		 */
 		void Angle(cv::Point2d* arucoCorner);
+
+		/**
+		 * Obtain robot's local coordinate change.
+		 */
 		void DeltaEigen();
 	};
 }
 
+/**
+ * @class ArucoLocalization
+ * @brief Implementation robot localization by aruco marker.
+ */
 class ArucoLocalization {
-	//Three first corners of aruco marker cartesian clockwise
+	/**
+	 * Three first corners of aruco marker cartesian clockwise.
+	 */
 	cv::Point2d arucoCorner[3];
-	//Frame for webcam capture
+
+	/**
+	 * Frame for webcam capture.
+	 */
 	cv::Mat currentVideoFrame;
-	//Webcam
+
+	/**
+	 * Webcam.
+	 */
 	cv::VideoCapture webcam;
-	//Vector for aruco markers' indexes
+
+	/**
+	 * Vector for aruco markers' indexes.
+	 */
 	std::vector<int> markerIds;
-	//Matrix for aruco markers' actual and rejected corners
+
+	/**
+	 * Matrix for aruco markers' actual and rejected corners.
+	 */
 	std::vector<std::vector<cv::Point2f>> markerCorners, rejectedCandidates;
-	//Creating the parameters for the aruco detection
+
+	/**
+	 * Creating the parameters for the aruco detection.
+	 */
 	cv::Ptr<cv::aruco::DetectorParameters> detector_parameters;
-	//Selecting the dictionary to use                        
+	
+	/**
+	 * Selecting the dictionary to use.
+	 */
 	cv::Ptr<cv::aruco::Dictionary> dictionary;
 
 	public:
-	ArucoLocalization(int cam_index, cv::aruco::PREDEFINED_DICTIONARY_NAME name);
-	~ArucoLocalization();
 
+	/**
+	 * Constructor. Connect webcamera and initialization detector.
+	 * 
+	 * @param cam_index index of webcamera in system.
+	 * @param dict_name name of aruco marker dictonary.
+	 */
+	ArucoLocalization(int cam_index, cv::aruco::PREDEFINED_DICTIONARY_NAME dict_name);
+	
+	~ArucoLocalization() {};
+
+	/**
+	 * Localize robot.
+	 * 
+	 * @param data storage robot's global coordinates and local coordinate change.
+	 */
 	bool localizate(td::TransferData* data);
+
+	/**
+	 * Open window with frame and drew aruco markers.
+	 * 
+	 * @remark Call after localization (function localize).
+	 */
 	void show_markers();
 };
 
+/**
+ * @param timePoint1 start time point.
+ * @return passed time from start time point. 
+ */
 double getTime(std::chrono::time_point<std::chrono::steady_clock> timePoint1);
 
 #endif
