@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.16)
 # set the project name and version
 project(aruco_robotino_localization_lib VERSION 1.2 DESCRIPTION "Library to localize mobile robot with atuco marker by static webcamera.")
 
+add_subdirectory(app)
 add_subdirectory(tests)
 
 include(GNUInstallDirs)
