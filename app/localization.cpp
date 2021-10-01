@@ -1,4 +1,5 @@
 #include "arucolocalization.hpp"
+#include "cmdoptionparser.hpp"
 #include "boost/interprocess/shared_memory_object.hpp"
 #include "boost/interprocess/mapped_region.hpp"
 #include <chrono>
@@ -8,7 +9,32 @@
 #include <cstdlib>
 #include <string>
 
-int main() {
+int main( int argc, char **argv ) {
+
+    //Index webcam
+    int cam_idx = 2;
+    float test_duration = 1;
+
+    // Process command line options.
+    if (argc > 1){
+        // Help option
+        if (cmdOptionExists(argv, argv+argc, "--help")) {
+            std::cout << "usage: localization [options]\n\n Options:\n\n"
+                      << std::left << "  " << std::setw(15) << "--help" << "Display this information.\n"
+                      << "  " << std::setw(15) << "-cam <index>" << "Use webcamera with <index> in system.\n"
+                      << "  " << std::setw(15) << "-t <duration>" << "Set <duration> of program execution in ms.\n\n";
+            return 0;
+        }
+        // Set webcam index option
+        if (cmdOptionExists(argv, argv+argc, "-cam")){
+            cam_idx = atoi(getCmdOption(argv, argv+argc, "-cam"));
+        }
+        // Set test duration option
+        if (cmdOptionExists(argv, argv+argc, "-t")){
+            test_duration = atof(getCmdOption(argv, argv+argc, "-t")) / 1000;
+        }
+    }
+
     //Remove shared memory on construction and destruction
     struct shm_remove
     {
@@ -25,50 +51,38 @@ int main() {
     //Map the whole shared memory in this process
     boost::interprocess::mapped_region region(shm, boost::interprocess::read_write);
 
-    //Write all the memory to 1
-    std::memset(region.get_address(), 1, region.get_size());
-
 	td::TransferData transfer;
-	ArucoLocalization cv_system(2, cv::aruco::DICT_4X4_50);
+	ArucoLocalization cv_system(cam_idx, cv::aruco::DICT_4X4_50);
     unsigned int count = 0;
 	auto timePoint1 = std::chrono::steady_clock::now();
-	double measure_time = 0;
-	while (true) {
-		std::cout << "Enter measurement time in sec or enter 0 to exit." << std::endl;
-		std::cin >> measure_time;
-		if (measure_time == 0) {
-			break;
-		}
-		double start_time = getTime(timePoint1);
-		while ((getTime(timePoint1) - start_time) <= measure_time) {
-			bool status = cv_system.localizate(&transfer);
-			if (status) {
-                unsigned long shift = 0;
-                uint8_t* start_point = (uint8_t*) region.get_address();
-                std::memcpy(start_point, &count, sizeof(count));
-                shift += sizeof(count);
-                std::memcpy(start_point + shift, &transfer.currGlobalCartesian.x, sizeof(transfer.currGlobalCartesian.x));
-                shift += sizeof(transfer.currGlobalCartesian.x);
-                std::memcpy(start_point + shift, &transfer.currGlobalCartesian.y, sizeof(transfer.currGlobalCartesian.y));
-                shift += sizeof(transfer.currGlobalCartesian.y);
-                std::memcpy(start_point + shift, &transfer.currAngle, sizeof(transfer.currAngle));
-                shift += sizeof(transfer.currAngle);
-                std::memcpy(start_point + shift, &transfer.deltaEigenCartesian.x, sizeof(transfer.deltaEigenCartesian.x));
-                shift += sizeof(transfer.deltaEigenCartesian.x);
-                std::memcpy(start_point + shift, &transfer.deltaEigenCartesian.y, sizeof(transfer.deltaEigenCartesian.y));
-                shift += sizeof(transfer.deltaEigenCartesian.y);
-                std::memcpy(start_point + shift, &transfer.deltaAngle, sizeof(transfer.deltaAngle));
-                shift += sizeof(transfer.deltaAngle);
-				std::cout << "|" << std::setw(15) << getTime(timePoint1) - start_time;
-				std::cout << "|" << std::setw(15) << transfer.currGlobalCartesian.x;
-				std::cout << "|" << std::setw(15) << transfer.currGlobalCartesian.y;
-				std::cout << "|" << std::setw(15) << transfer.currAngle;
-				std::cout << "|" << std::setw(15) << transfer.deltaEigenCartesian.x;
-				std::cout << "|" << std::setw(15) << transfer.deltaEigenCartesian.y;
-				std::cout << "|" << std::setw(15) << transfer.deltaAngle << "|" << std::endl;
-                count++;
-			}
-		}
-	}
+    while (getTime(timePoint1) <= test_duration) {
+        bool status = cv_system.localizate(&transfer);
+        if (status) {
+            unsigned long shift = 0;
+            uint8_t* start_point = (uint8_t*) region.get_address();
+            std::memcpy(start_point, &count, sizeof(count));
+            shift += sizeof(count);
+            std::memcpy(start_point + shift, &transfer.currGlobalCartesian.x, sizeof(transfer.currGlobalCartesian.x));
+            shift += sizeof(transfer.currGlobalCartesian.x);
+            std::memcpy(start_point + shift, &transfer.currGlobalCartesian.y, sizeof(transfer.currGlobalCartesian.y));
+            shift += sizeof(transfer.currGlobalCartesian.y);
+            std::memcpy(start_point + shift, &transfer.currAngle, sizeof(transfer.currAngle));
+            shift += sizeof(transfer.currAngle);
+            std::memcpy(start_point + shift, &transfer.deltaEigenCartesian.x, sizeof(transfer.deltaEigenCartesian.x));
+            shift += sizeof(transfer.deltaEigenCartesian.x);
+            std::memcpy(start_point + shift, &transfer.deltaEigenCartesian.y, sizeof(transfer.deltaEigenCartesian.y));
+            shift += sizeof(transfer.deltaEigenCartesian.y);
+            std::memcpy(start_point + shift, &transfer.deltaAngle, sizeof(transfer.deltaAngle));
+            shift += sizeof(transfer.deltaAngle);
+            std::cout << "|" << std::setw(15) << getTime(timePoint1);
+            std::cout << "|" << std::setw(15) << transfer.currGlobalCartesian.x;
+            std::cout << "|" << std::setw(15) << transfer.currGlobalCartesian.y;
+            std::cout << "|" << std::setw(15) << transfer.currAngle;
+            std::cout << "|" << std::setw(15) << transfer.deltaEigenCartesian.x;
+            std::cout << "|" << std::setw(15) << transfer.deltaEigenCartesian.y;
+            std::cout << "|" << std::setw(15) << transfer.deltaAngle << "|" << std::endl;
+            count++;
+        }
+    }
 	return 0;
 }

@@ -145,6 +145,6 @@ class ArucoLocalization {
  * @param timePoint1 start time point.
  * @return passed time from start time point. 
  */
-double getTime(std::chrono::time_point<std::chrono::steady_clock> timePoint1);
+float getTime(std::chrono::time_point<std::chrono::steady_clock> timePoint1);
 
 #endif

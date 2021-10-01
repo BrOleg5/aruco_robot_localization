@@ -118,7 +118,7 @@ void ArucoLocalization::show_markers() {
 	cv::waitKey();
 }
 
-double getTime(std::chrono::time_point<std::chrono::steady_clock> timePoint1) {
+float getTime(std::chrono::time_point<std::chrono::steady_clock> timePoint1) {
 	auto timePoint2 = std::chrono::steady_clock::now();
 	std::chrono::duration<float> curTime = timePoint2 - timePoint1;
 	auto timePassed = curTime.count();
