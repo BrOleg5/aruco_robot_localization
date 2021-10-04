@@ -55,6 +55,7 @@ ArucoLocalization::ArucoLocalization(int cam_index, cv::aruco::PREDEFINED_DICTIO
 	webcam.set(cv::CAP_PROP_FRAME_HEIGHT, 1080);
 	webcam.set(cv::CAP_PROP_AUTOFOCUS, 0);
 	webcam.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
+	webcam.set(cv::CAP_PROP_BUFFERSIZE, 1);
 	detector_parameters = cv::aruco::DetectorParameters::create();
 	dictionary = cv::aruco::getPredefinedDictionary(dict_name);
 

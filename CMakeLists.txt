@@ -14,8 +14,7 @@ find_package( OpenCV REQUIRED )
 
 set_target_properties(aruco_robotino_localization_lib PROPERTIES
                       VERSION ${PROJECT_VERSION}
-                      PUBLIC_HEADER include/arucolocalization.hpp
-                      PUBLIC_HEADER include/cmdoptionparser.hpp)
+                      PUBLIC_HEADER include/arucolocalization.hpp)
 
 target_include_directories(aruco_robotino_localization_lib 
                            PRIVATE include
