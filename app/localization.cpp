@@ -37,7 +37,7 @@ int main( int argc, char **argv ) {
         shm_flag = cmdOptionExists(argv, argv+argc, "-shared-memory");
     }
 
-    Transmitter<double> transmitter("SlippageComp", 1000);
+    shm::Transmitter<double> transmitter("SlippageComp", 1000);
     //Initialization shared memory vector
     for (size_t i = 0; i < 7; i++)
     {
