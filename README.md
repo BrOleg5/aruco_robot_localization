@@ -6,6 +6,7 @@ Application and library was created to localize mobile robot by aruco marker, wh
 
 - OpenCV 4.20 or later with extra modules (aruco)
 - Boost library v1.77.0 or later
+- [Boost shared memory wrapper](https://github.com/BrOleg5/boost-shared-memory-wrapper) (already included in the repository)
 
 ## Building and install application and library
 
