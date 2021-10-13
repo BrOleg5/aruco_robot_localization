@@ -4,54 +4,57 @@ Application and library was created to localize mobile robot by aruco marker, wh
 
 ## Requirements
 
-- OpenCV 4.20 or later with extra modules (aruco)
-- Boost library v1.77.0 or later
-- [Boost shared memory wrapper](https://github.com/BrOleg5/boost-shared-memory-wrapper) (already included in the repository)
+- OpenCV v4.20 or later with extra modules (aruco)
+- [Boost shared memory wrapper](https://github.com/BrOleg5/boost-shared-memory-wrapper) v1.1 or later
 
-## Building and install application and library
-
-### Configure aruco-robot-localization library as static library
+## Configure, build and install library and application
 
 ```
 # Create build directory
 mkdir build
 
-# Configure
-cmake -S mobile-robot-localization/ -B build/ -DCMAKE_INSTALL_PREFIX="<path_to_install>"
-```
+# Configure as static library
+cmake -S mobile-robot-localization/ -B build/
 
-### Configure the library as shared library
-
-```
-# Create build directory
-mkdir build
-
-# Configure
-cmake -S mobile-robot-localization/ -B build/ -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX="<path_to_install>"
-```
-
-### Build the application and the library
-
-```
-# Build
+# Build library
 cmake --build build/
+
+# Install library
+sudo cmake --install build/
 ```
 
-### Install aruco-robot-localization library
+You can also build and install shared library:
+```
+# Configure as shared library
+cmake -S mobile-robot-localization/ -B build/ -DBUILD_SHARED_LIBS=ON
+```
 
+You can build and install tests:
 ```
-cmake --install build/
+# Configure as static library
+cmake -S mobile-robot-localization/ -B build/ -DBUILD_TESTS=ON -DINSTALL_TESTS=ON
 ```
 
-Also you can build and install library at the same time:
+If you want to build and install application, 
 ```
-cmake --build build/ --target install
+# Configure shared library and application
+cmake -S mobile-robot-localization/ -B build/ -DBUILD_SHARED_LIBS=ON -DBUILD_APP=ON -DINSTALL_APP=ON
+```
+
+## Using ArucoLocalization with gcc and CMake
+
+Add this strings in your CMakeLists.txt file:
+```
+find_package(ArucoLocalization 1.2 REQUIRED)
+target_link_libraries(<ProjectName> ArucoLocalizationLib)
+# if nessesary, add include directories to target
+target_include_directories(<ProjectName> ${ArucoLocalization_INCLUDE_DIRS})
 ```
 
 ## Usage application
 
 ```
-usage: ./localization [options]
+usage: localization [options]
 
 Options:
 

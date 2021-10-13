@@ -1,10 +1,17 @@
 add_executable(localization localization.cpp)
 
-target_link_libraries(localization 
-                      PUBLIC aruco_robotino_localization_lib
-                      ${Boost_LIBRARIES} rt
-                      ${Boost_LIBRARIES} pthread)
+find_package(SharedMemory 1.1 REQUIRED)
 
-target_include_directories(localization
-        PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../include"
-        "/usr/local/boost_1_77_0")
+target_link_libraries(localization PUBLIC
+                      ArucoLocalizationLib
+                      SharedMemoryLib)
+
+# target_include_directories(localization
+                         #   PUBLIC ${ArucoLocalization_INCLUDE_DIRS}
+                         #   ${SharedMemory_INCLUDE_DIRS})
+
+if(INSTALL_APP)
+    install(TARGETS localization
+            EXPORT ArucoLocalizationTargets
+            RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}/ArucoLocalization" COMPONENT bin)
+endif()
