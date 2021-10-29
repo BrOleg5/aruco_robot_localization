@@ -140,11 +140,4 @@ class ArucoLocalization {
 	 */
 	void show_markers();
 };
-
-/**
- * @param timePoint1 start time point.
- * @return passed time from start time point. 
- */
-float getTime(std::chrono::time_point<std::chrono::steady_clock> timePoint1);
-
 #endif

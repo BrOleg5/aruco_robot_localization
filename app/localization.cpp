@@ -2,15 +2,14 @@
 #include "cmdoptionparser.hpp"
 #include "sharedmemory.hpp"
 #include <chrono>
-#include <time.h>
 #include <iomanip>
 
 int main( int argc, char **argv ) {
 
     // Index webcam
-    int cam_idx = 2;
-    // Test suration
-    float test_duration = 1;
+    int cam_idx = 0;
+    // Test duration
+    float test_duration = 60000;
     // Shared memory flag
     bool shm_flag = false;
 
@@ -31,7 +30,7 @@ int main( int argc, char **argv ) {
         }
         // Set test duration option
         if (cmdOptionExists(argv, argv+argc, "-t")){
-            test_duration = atof(getCmdOption(argv, argv+argc, "-t")) / 1000;
+            test_duration = atof(getCmdOption(argv, argv+argc, "-t"));
         }
         // Shared memory flag
         shm_flag = cmdOptionExists(argv, argv+argc, "-shared-memory");
@@ -46,8 +45,9 @@ int main( int argc, char **argv ) {
 
 	td::TransferData transfer;
 	ArucoLocalization cv_system(cam_idx, cv::aruco::DICT_4X4_50);
-	auto timePoint1 = std::chrono::steady_clock::now();
-    while (getTime(timePoint1) <= test_duration) {
+	std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
+    while (std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count() <= test_duration) {
         bool status = cv_system.localizate(&transfer);
         if (status) {
             if (shm_flag){
@@ -67,6 +67,7 @@ int main( int argc, char **argv ) {
             std::cout << "|" << std::setw(15) << transfer.deltaEigenCartesian.y;
             std::cout << "|" << std::setw(15) << transfer.deltaAngle << "|\n";
         }
+        current_time = std::chrono::steady_clock::now();
     }
 	return 0;
 }

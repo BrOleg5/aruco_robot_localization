@@ -50,7 +50,11 @@ ArucoLocalization::ArucoLocalization(int cam_index, cv::aruco::PREDEFINED_DICTIO
 		arucoCorner[i].x = 0;
 		arucoCorner[i].y = 0;
 	}
-	webcam.open(cam_index);
+	#ifdef WIN32
+		webcam.open(cam_index, cv::CAP_DSHOW);
+	#else
+		webcam.open(cam_index);
+	#endif
 	webcam.set(cv::CAP_PROP_FRAME_WIDTH, 1920);
 	webcam.set(cv::CAP_PROP_FRAME_HEIGHT, 1080);
 	webcam.set(cv::CAP_PROP_AUTOFOCUS, 0);
@@ -117,11 +121,4 @@ void ArucoLocalization::show_markers() {
 	cv::aruco::drawDetectedMarkers(outputImage, markerCorners, markerIds);
 	cv::imshow("Found aruco markers.", outputImage);
 	cv::waitKey();
-}
-
-float getTime(std::chrono::time_point<std::chrono::steady_clock> timePoint1) {
-	auto timePoint2 = std::chrono::steady_clock::now();
-	std::chrono::duration<float> curTime = timePoint2 - timePoint1;
-	auto timePassed = curTime.count();
-	return timePassed;
 }
