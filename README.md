@@ -5,9 +5,12 @@ Application and library was created to localize mobile robot by aruco marker, wh
 ## Requirements
 
 - OpenCV v4.20 or later with extra modules (aruco)
-- [Boost shared memory wrapper](https://github.com/BrOleg5/boost-shared-memory-wrapper) v1.1 or later
+- [Boost shared memory wrapper](https://github.com/BrOleg5/boost-shared-memory-wrapper) v1.2 or later
+- gcc 9.3.0+ or MSVC 19+
 
 ## Configure, build and install library and application
+
+### Ubuntu 20.04
 
 ```
 # Create build directory
@@ -22,6 +25,24 @@ cmake --build build/
 # Install library
 sudo cmake --install build/
 ```
+
+### Windows 10
+
+```
+# Create build directory
+mkdir build
+
+# Configure as static library
+cmake -S mobile-robot-localization/ -B build/ -G "Visual Studio 15 Win64"
+
+# Build library
+cmake --build build/
+
+# Install library
+sudo cmake --install build/
+```
+
+### Extra options
 
 You can also build and install shared library:
 ```
@@ -41,7 +62,7 @@ If you want to build and install application,
 cmake -S mobile-robot-localization/ -B build/ -DBUILD_SHARED_LIBS=ON -DBUILD_APP=ON -DINSTALL_APP=ON
 ```
 
-## Using ArucoLocalization with gcc and CMake
+## Using ArucoLocalization with CMake
 
 Add this strings in your CMakeLists.txt file:
 ```
