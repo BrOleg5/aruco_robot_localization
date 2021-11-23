@@ -36,7 +36,7 @@ int main( int argc, char **argv ) {
         shm_flag = cmdOptionExists(argv, argv+argc, "-shared-memory");
     }
 
-    shm::Transmitter<double> transmitter("SlippageComp", 1000);
+    shm::Transmitter<double> transmitter("Global\\CameraData", 1000);
     //Initialization shared memory vector
     for (size_t i = 0; i < 7; i++)
     {
@@ -66,6 +66,9 @@ int main( int argc, char **argv ) {
             std::cout << "|" << std::setw(15) << transfer.deltaEigenCartesian.x;
             std::cout << "|" << std::setw(15) << transfer.deltaEigenCartesian.y;
             std::cout << "|" << std::setw(15) << transfer.deltaAngle << "|\n";
+        }
+        else {
+            break;
         }
         current_time = std::chrono::steady_clock::now();
     }

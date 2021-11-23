@@ -5,7 +5,7 @@
 int main() {
 	td::TransferData transfer;
 	ArucoLocalization cv_system(0, cv::aruco::DICT_4X4_50);
-	double measure_time = 0;
+	double measure_time = 10000;
 	while (true) {
 		std::cout << "Enter measurement time in sec or enter 0 to exit." << std::endl;
 		std::cin >> measure_time;
@@ -26,6 +26,9 @@ int main() {
 				std::cout << "|" << std::setw(15) << transfer.deltaEigenCartesian.y;
 				std::cout << "|" << std::setw(15) << transfer.deltaAngle << "|" << std::endl;
 			}
+			else {
+            	break;
+        	}
 			current_time = std::chrono::steady_clock::now();
 		}
 	}

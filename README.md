@@ -28,6 +28,8 @@ sudo cmake --install build/
 
 ### Windows 10
 
+Command shell or PowerShell will be run as administrator to install library in system partition.
+
 ```
 # Create build directory
 mkdir build
@@ -56,7 +58,7 @@ You can build and install tests:
 cmake -S mobile-robot-localization/ -B build/ -DBUILD_TESTS=ON -DINSTALL_TESTS=ON
 ```
 
-If you want to build and install application, 
+If you want to build and install application: 
 ```
 # Configure shared library and application
 cmake -S mobile-robot-localization/ -B build/ -DBUILD_SHARED_LIBS=ON -DBUILD_APP=ON -DINSTALL_APP=ON
@@ -66,7 +68,7 @@ cmake -S mobile-robot-localization/ -B build/ -DBUILD_SHARED_LIBS=ON -DBUILD_APP
 
 Add this strings in your CMakeLists.txt file:
 ```
-find_package(ArucoLocalization 1.2 REQUIRED)
+find_package(ArucoLocalization 1.3 REQUIRED)
 target_link_libraries(<ProjectName> ArucoLocalizationLib)
 # if nessesary, add include directories to target
 target_include_directories(<ProjectName> ${ArucoLocalization_INCLUDE_DIRS})
