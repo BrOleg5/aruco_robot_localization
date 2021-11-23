@@ -46,12 +46,6 @@ sudo cmake --install build/
 
 ### Extra options
 
-You can also build and install shared library:
-```
-# Configure as shared library
-cmake -S mobile-robot-localization/ -B build/ -DBUILD_SHARED_LIBS=ON
-```
-
 You can build and install tests:
 ```
 # Configure as static library
@@ -61,7 +55,7 @@ cmake -S mobile-robot-localization/ -B build/ -DBUILD_TESTS=ON -DINSTALL_TESTS=O
 If you want to build and install application: 
 ```
 # Configure shared library and application
-cmake -S mobile-robot-localization/ -B build/ -DBUILD_SHARED_LIBS=ON -DBUILD_APP=ON -DINSTALL_APP=ON
+cmake -S mobile-robot-localization/ -B build/ -DBUILD_APP=ON -DINSTALL_APP=ON
 ```
 
 ## Using ArucoLocalization with CMake
