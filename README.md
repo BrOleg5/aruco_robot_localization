@@ -54,7 +54,7 @@ cmake -S mobile-robot-localization/ -B build/ -DBUILD_TESTS=ON -DINSTALL_TESTS=O
 
 If you want to build and install application: 
 ```
-# Configure shared library and application
+# Configure application
 cmake -S mobile-robot-localization/ -B build/ -DBUILD_APP=ON -DINSTALL_APP=ON
 ```
 
