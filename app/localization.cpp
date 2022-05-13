@@ -9,7 +9,7 @@ int main( int argc, char **argv ) {
     // Index webcam
     int cam_idx = 0;
     // Test duration
-    float test_duration = 60000;
+    double test_duration = 60000;
     // Shared memory flag
     bool shm_flag = false;
 
