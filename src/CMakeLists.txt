@@ -1,6 +1,6 @@
 add_library(ArucoLocalizationLib arucolocalization.cpp)
 
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 4.2.0 REQUIRED)
 
 # set header
 set(HEADER ${PROJECT_SOURCE_DIR}/include/cmdoptionparser.hpp)
@@ -19,7 +19,7 @@ set_target_properties(ArucoLocalizationLib PROPERTIES
                       PUBLIC_HEADER arucolocalization.hpp)
 
 target_link_libraries(ArucoLocalizationLib ${OpenCV_LIBS})
-
+ 
 target_include_directories(ArucoLocalizationLib PUBLIC
                            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
                            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
