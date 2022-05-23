@@ -139,5 +139,10 @@ class ArucoLocalization {
 	 * @remark Call after localization (function localize).
 	 */
 	void show_markers();
+
+	/**
+	 * Open window with frame.
+	 */
+	void show_frame();
 };
 #endif

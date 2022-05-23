@@ -53,11 +53,11 @@ ArucoLocalization::ArucoLocalization(int cam_index, cv::aruco::PREDEFINED_DICTIO
 	#ifdef WIN32
 		webcam.open(cam_index, cv::CAP_DSHOW);
 	#else
-		webcam.open(cam_index);
+		webcam.open(cam_index)
 	#endif
 	webcam.set(cv::CAP_PROP_FRAME_WIDTH, 1920);
 	webcam.set(cv::CAP_PROP_FRAME_HEIGHT, 1080);
-	webcam.set(cv::CAP_PROP_AUTOFOCUS, 0);
+	webcam.set(cv::CAP_PROP_FOCUS, 0); // min: 0, max: 255, increment:5
 	webcam.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
 	webcam.set(cv::CAP_PROP_BUFFERSIZE, 1);
 	detector_parameters = cv::aruco::DetectorParameters::create();
@@ -127,5 +127,8 @@ void ArucoLocalization::show_markers() {
 	currentVideoFrame.copyTo(outputImage);
 	cv::aruco::drawDetectedMarkers(outputImage, markerCorners, markerIds);
 	cv::imshow("Found aruco markers.", outputImage);
-	cv::waitKey();
+}
+
+void ArucoLocalization::show_frame() {
+	cv::imshow("Cam frame", currentVideoFrame);
 }
