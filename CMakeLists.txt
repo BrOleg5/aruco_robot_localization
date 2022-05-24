@@ -18,8 +18,7 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 option(BUILD_APP "Build application to localize Aruco marker." OFF)
 option(INSTALL_APP "Install application to localize Aruco marker" OFF)
-option(BUILD_TESTS "Build tests programs." OFF)
-option(INSTALL_TESTS "Install tests programs." OFF)
+option(BUILD_EXAMPLES "Build and install examples." OFF)
 
 add_subdirectory(src)
 
@@ -27,27 +26,17 @@ if(BUILD_APP OR INSTALL_APP)
         add_subdirectory(app)        
 endif()
 
-if(BUILD_TESTS OR INSTALL_TESTS)
-        add_subdirectory(tests) 
+if(BUILD_EXAMPLES)
+        add_subdirectory(examples)
 endif()
 
 # Add all targets to the build-tree export set
-if(BUILD_TESTS OR INSTALL_TESTS)
-  if(BUILD_APP OR INSTALL_APP)
-        export(TARGETS ArucoLocalizationLib ArucoLocalizationTest localization
-               FILE "${PROJECT_BINARY_DIR}/cmake/ArucoLocalizationTargets.cmake")
-  else()
-        export(TARGETS ArucoLocalizationLib ArucoLocalizationTest
-               FILE "${PROJECT_BINARY_DIR}/cmake/ArucoLocalizationTargets.cmake")
-  endif()
+if(BUILD_APP OR INSTALL_APP)
+      export(TARGETS ArucoLocalizationLib localization
+              FILE "${PROJECT_BINARY_DIR}/cmake/ArucoLocalizationTargets.cmake")
 else()
-  if(BUILD_APP OR INSTALL_APP)
-        export(TARGETS ArucoLocalizationLib localization
-                FILE "${PROJECT_BINARY_DIR}/cmake/ArucoLocalizationTargets.cmake")
-  else()
-        export(TARGETS ArucoLocalizationLib
-                FILE "${PROJECT_BINARY_DIR}/cmake/ArucoLocalizationTargets.cmake")
-  endif()
+      export(TARGETS ArucoLocalizationLib
+              FILE "${PROJECT_BINARY_DIR}/cmake/ArucoLocalizationTargets.cmake")
 endif()
 
 # Export the package for use from the build-tree
