@@ -17,12 +17,11 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 option(BUILD_APP "Build application to localize Aruco marker." OFF)
-option(INSTALL_APP "Install application to localize Aruco marker" OFF)
 option(BUILD_EXAMPLES "Build and install examples." OFF)
 
 add_subdirectory(src)
 
-if(BUILD_APP OR INSTALL_APP)
+if(BUILD_APP)
         add_subdirectory(app)        
 endif()
 
@@ -31,13 +30,8 @@ if(BUILD_EXAMPLES)
 endif()
 
 # Add all targets to the build-tree export set
-if(BUILD_APP OR INSTALL_APP)
-      export(TARGETS ArucoLocalizationLib localization
-              FILE "${PROJECT_BINARY_DIR}/cmake/ArucoLocalizationTargets.cmake")
-else()
-      export(TARGETS ArucoLocalizationLib
-              FILE "${PROJECT_BINARY_DIR}/cmake/ArucoLocalizationTargets.cmake")
-endif()
+export(TARGETS ArucoLocalizationLib
+       FILE "${PROJECT_BINARY_DIR}/cmake/ArucoLocalizationTargets.cmake")
 
 # Export the package for use from the build-tree
 # (this registers the build-tree with a global CMake-registry)
