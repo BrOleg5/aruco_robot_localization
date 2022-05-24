@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(ArucoLocalization VERSION 1.3 DESCRIPTION "Library to localize mobile robot with atuco marker by static webcamera.")
+set(ARUCOLOCALIZATION_MAJOR_VERSION 1)
+set(ARUCOLOCALIZATION_MINOR_VERSION 4)
+set(ARUCOLOCALIZATION_PATCH_VERSION 0)
+set(ARUCOLOCALIZATION_VERSION 
+    ${ARUCOLOCALIZATION_MAJOR_VERSION}.${ARUCOLOCALIZATION_MINOR_VERSION}.${ARUCOLOCALIZATION_PATCH_VERSION})
+
+project(ArucoLocalization VERSION ${ARUCOLOCALIZATION_VERSION} DESCRIPTION 
+        "Library to localize mobile robot with atuco marker by static webcamera.")
 
 # set cmake config install dirs
 if(WIN32 AND NOT CYGWIN)
