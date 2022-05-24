@@ -82,7 +82,7 @@ bool ArucoLocalization::localizate(td::TransferData* data) {
 	cv::Rect rect(340, 0, 1150, 1080);
 	if (rect.x < 0 || rect.width < 0 || rect.x + rect.width > currentVideoFrame.cols ||
 		rect.y < 0 || rect.height < 0 || rect.y + rect.height > currentVideoFrame.rows) {
-		std::cout << "Сamera has a resolution less than 1920x1080. Select another camera." << std::endl;
+		std::cout << "Camera has a resolution less than 1920x1080. Select another camera." << std::endl;
 		return false;
 	}
 	currentVideoFrame = currentVideoFrame(rect);

@@ -4,7 +4,7 @@ project(ArucoLocalization VERSION 1.3 DESCRIPTION "Library to localize mobile ro
 
 # set cmake config install dirs
 if(WIN32 AND NOT CYGWIN)
-  set(DEF_INSTALL_CMAKE_DIR CMake)
+  set(DEF_INSTALL_CMAKE_DIR cmake)
 else()
   set(DEF_INSTALL_CMAKE_DIR lib/cmake/ArucoLocalization)
 endif()
