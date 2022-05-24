@@ -1,20 +1,20 @@
 # Config file for the ArucoLocalization package
 # It defines the following variables
-#  ArucoLocalization_INCLUDE_DIRS - include directories for ArucoLocalization
-#  ArucoLocalization_LIBRARIES    - libraries to link against
-#  ArucoLocalization_EXECUTABLE   - the tests executable
+#  ArucoLocalization_INCLUDE_DIRS   - include directories
+#  ArucoLocalization_LIBS           - libraries to link against
+#  ArucoLocalization_EXECUTABLE     - the tests executable
 
 # Compute paths
 get_filename_component(ARUCOLOCALIZATION_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
 set(ArucoLocalization_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
 
 # Our library dependencies (contains definitions for IMPORTED targets)
-if(NOT TARGET ArucoLocalizationLib AND NOT ArucoLocalization_BINARY_DIR)
+if(NOT TARGET arucolocalization AND NOT ArucoLocalization_BINARY_DIR)
     include("${ARUCOLOCALIZATION_CMAKE_DIR}/cmake/ArucoLocalizationTargets.cmake")
 endif()
 
-# These are IMPORTED targets created by Robotino4Targets.cmake
-set(ArucoLocalization_LIBRARIES ArucoLocalizationLib)
+# These are IMPORTED targets created by ArucoLocalizationTargets.cmake
+set(ArucoLocalization_LIBS arucolocalization)
 if(@BUILD_EXAMPLES@)
     set(ArucoLocalization_EXECUTABLE get_position)
 endif()

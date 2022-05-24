@@ -30,7 +30,7 @@ if(BUILD_EXAMPLES)
 endif()
 
 # Add all targets to the build-tree export set
-export(TARGETS ArucoLocalizationLib
+export(TARGETS arucolocalization
        FILE "${PROJECT_BINARY_DIR}/cmake/ArucoLocalizationTargets.cmake")
 
 # Export the package for use from the build-tree
