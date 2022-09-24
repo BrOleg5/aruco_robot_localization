@@ -53,7 +53,7 @@ ArucoLocalization::ArucoLocalization(int cam_index, cv::aruco::PREDEFINED_DICTIO
 	#ifdef WIN32
 		webcam.open(cam_index, cv::CAP_DSHOW);
 	#else
-		webcam.open(cam_index)
+		webcam.open(cam_index);
 	#endif
 	webcam.set(cv::CAP_PROP_FRAME_WIDTH, 1920);
 	webcam.set(cv::CAP_PROP_FRAME_HEIGHT, 1080);
@@ -73,25 +73,41 @@ ArucoLocalization::ArucoLocalization(int cam_index, cv::aruco::PREDEFINED_DICTIO
 	}
 }
 
-bool ArucoLocalization::localizate(td::TransferData* data) {
-	if (!webcam.read(currentVideoFrame)) {
-		std::cout << "Could not read current video frame." << std::endl;
-		return false;
-	}
-	// Check image and rect sizes
-	cv::Rect rect(340, 0, 1150, 1080);
-	if (rect.x < 0 || rect.width < 0 || rect.x + rect.width > currentVideoFrame.cols ||
-		rect.y < 0 || rect.height < 0 || rect.y + rect.height > currentVideoFrame.rows) {
-		std::cout << "Camera has a resolution less than 1920x1080. Select another camera." << std::endl;
-		return false;
-	}
-	currentVideoFrame = currentVideoFrame(rect);
-	//Clearing the markers' indexes vector                   
+bool ArucoLocalization::localizate() {
+	webcam >> currentVideoFrame;
+	//Clearing the markers' indexes vector
 	markerIds.clear();
-	//Detecting the aruco markers                        
+	//Detecting the aruco markers
 	cv::aruco::detectMarkers(currentVideoFrame, dictionary, markerCorners, markerIds, detector_parameters, rejectedCandidates);
-	if (markerCorners.empty() == 0) {
-		//Checking if there are any markers                  
+	if (!markerCorners.empty()) {
+		//Checking if there are any markers
+		if (!markerIds.empty()) {
+			//If yes, setting the corners' cartesian      
+			for (int i = 0; i < 3; i++) {
+				arucoCorner[i].x = markerCorners[0][i].x - 0.105 * (markerCorners[0][i].x - 620);
+				arucoCorner[i].y = markerCorners[0][i].y - 0.105 * (markerCorners[0][i].y - 540);
+			}
+		}
+		else {             
+			std::cout << "Not aruco markers." << std::endl;
+			return false;
+		}
+		return true;
+	}
+	else {
+		std::cout << "Error detecting aruco, try replacing Robotino." << std::endl;
+		return false;
+	}
+}
+
+bool ArucoLocalization::localizate(td::TransferData* data) {
+	webcam >> currentVideoFrame;
+	//Clearing the markers' indexes vector
+	markerIds.clear();
+	//Detecting the aruco markers
+	cv::aruco::detectMarkers(currentVideoFrame, dictionary, markerCorners, markerIds, detector_parameters, rejectedCandidates);
+	if (!markerCorners.empty()) {
+		//Checking if there are any markers       
 		if (!markerIds.empty()) {
 			//If yes, setting the corners' cartesian         
 			for (int i = 0; i < 3; i++) {
@@ -126,7 +142,7 @@ void ArucoLocalization::show_markers() {
 	//Drawing the detection square in the image
 	currentVideoFrame.copyTo(outputImage);
 	cv::aruco::drawDetectedMarkers(outputImage, markerCorners, markerIds);
-	cv::imshow("Found aruco markers.", outputImage);
+	cv::imshow("Found aruco markers", outputImage);
 }
 
 void ArucoLocalization::show_frame() {

@@ -128,6 +128,11 @@ class ArucoLocalization {
 
 	/**
 	 * Localize robot.
+	 */
+	bool localizate();
+
+	/**
+	 * Localize robot.
 	 * 
 	 * @param data storage robot's global coordinates and local coordinate change.
 	 */
