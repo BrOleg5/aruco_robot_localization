@@ -70,6 +70,8 @@ int main( int argc, char **argv ) {
     std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
     long long time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
     while (time <= test_duration) {
+        current_time = std::chrono::steady_clock::now();
+        time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
         bool status = cv_system.localizate(&transfer);
         if (status) {
             if (shm_flag){
@@ -92,8 +94,6 @@ int main( int argc, char **argv ) {
         else {
             break;
         }
-        current_time = std::chrono::steady_clock::now();
-        time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
     }
 	return 0;
 }
