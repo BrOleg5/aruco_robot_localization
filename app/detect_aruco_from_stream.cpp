@@ -1,11 +1,12 @@
 #include "arucolocalization.hpp"
 #include "cmdoptionparser.hpp"
 #include <iomanip>
+#include <chrono>
 
 int main( int argc, char **argv ) {
 
     // Index webcam
-    int cam_idx = 0;
+    int cam_idx = 1;
 
     // Process command line options.
     if (argc > 1){
@@ -22,9 +23,16 @@ int main( int argc, char **argv ) {
         }
     }
 
-	ArucoLocalization cv_system(cam_idx, cv::aruco::DICT_6X6_50);
+	ArucoLocalization cv_system(cam_idx, cv::aruco::DICT_4X4_50);
+    std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
+    long long time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
     while(true) {
+        start_time = std::chrono::steady_clock::now();
         bool status = cv_system.localizate();
+        current_time = std::chrono::steady_clock::now();
+        time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
+        std::cout << "Time process one frame: " << time << "ms\n";
         if(status) {
             cv_system.show_markers();
             if(cv::pollKey() == 'q') {

@@ -9,6 +9,14 @@ set(ARUCOLOCALIZATION_VERSION
 project(ArucoLocalization VERSION ${ARUCOLOCALIZATION_VERSION} DESCRIPTION 
         "Library to localize mobile robot with atuco marker by static webcamera.")
 
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
+if(MSVC)
+  set(CMAKE_CXX_FLAGS_RELEASE "/O2")
+endif()
+
 # set cmake config install dirs
 if(WIN32 AND NOT CYGWIN)
   set(DEF_INSTALL_CMAKE_DIR cmake)

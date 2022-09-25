@@ -60,7 +60,8 @@ ArucoLocalization::ArucoLocalization(int cam_index, cv::aruco::PREDEFINED_DICTIO
 	webcam.set(cv::CAP_PROP_FOCUS, 0); // min: 0, max: 255, increment:5
 	webcam.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
 	webcam.set(cv::CAP_PROP_BUFFERSIZE, 1);
-	detector_parameters = cv::aruco::DetectorParameters::create();
+	webcam.set(cv::CAP_PROP_FPS, 30);
+	detectorParameters = cv::aruco::DetectorParameters::create();
 	dictionary = cv::aruco::getPredefinedDictionary(dict_name);
 
 	//Checking for the webcam to be connected 
@@ -78,17 +79,10 @@ bool ArucoLocalization::localizate() {
 	//Clearing the markers' indexes vector
 	markerIds.clear();
 	//Detecting the aruco markers
-	cv::aruco::detectMarkers(currentVideoFrame, dictionary, markerCorners, markerIds, detector_parameters, rejectedCandidates);
+	cv::aruco::detectMarkers(currentVideoFrame, dictionary, markerCorners, markerIds, detectorParameters, rejectedCandidates);
 	if (!markerCorners.empty()) {
 		//Checking if there are any markers
-		if (!markerIds.empty()) {
-			//If yes, setting the corners' cartesian      
-			for (int i = 0; i < 3; i++) {
-				arucoCorner[i].x = markerCorners[0][i].x - 0.105 * (markerCorners[0][i].x - 620);
-				arucoCorner[i].y = markerCorners[0][i].y - 0.105 * (markerCorners[0][i].y - 540);
-			}
-		}
-		else {             
+		if (markerIds.empty()) {         
 			std::cout << "Not aruco markers." << std::endl;
 			return false;
 		}
@@ -105,7 +99,7 @@ bool ArucoLocalization::localizate(td::TransferData* data) {
 	//Clearing the markers' indexes vector
 	markerIds.clear();
 	//Detecting the aruco markers
-	cv::aruco::detectMarkers(currentVideoFrame, dictionary, markerCorners, markerIds, detector_parameters, rejectedCandidates);
+	cv::aruco::detectMarkers(currentVideoFrame, dictionary, markerCorners, markerIds, detectorParameters, rejectedCandidates);
 	if (!markerCorners.empty()) {
 		//Checking if there are any markers       
 		if (!markerIds.empty()) {

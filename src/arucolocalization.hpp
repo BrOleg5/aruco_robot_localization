@@ -107,7 +107,7 @@ class ArucoLocalization {
 	/**
 	 * Creating the parameters for the aruco detection.
 	 */
-	cv::Ptr<cv::aruco::DetectorParameters> detector_parameters;
+	cv::Ptr<cv::aruco::DetectorParameters> detectorParameters;
 	
 	/**
 	 * Selecting the dictionary to use.
