@@ -1,45 +1,36 @@
 #include "arucolocalization.hpp"
-#include "cmdoptionparser.hpp"
+#include <opencv2/core/utility.hpp>
 #include "sharedmemory.hpp"
 #include <chrono>
 #include <iomanip>
 
+const std::string about = "Localization of Aruco marker.";
+const std::string keys  =
+        "{h help ? usage |       | Print help message}"
+        "{d              |       | dictionary: DICT_4X4_50=0, DICT_4X4_100=1, DICT_4X4_250=2,"
+        "DICT_4X4_1000=3, DICT_5X5_50=4, DICT_5X5_100=5, DICT_5X5_250=6, DICT_5X5_1000=7, "
+        "DICT_6X6_50=8, DICT_6X6_100=9, DICT_6X6_250=10, DICT_6X6_1000=11, DICT_7X7_50=12,"
+        "DICT_7X7_100=13, DICT_7X7_250=14, DICT_7X7_1000=15, DICT_ARUCO_ORIGINAL = 16,"
+        "DICT_APRILTAG_16h5=17, DICT_APRILTAG_25h9=18, DICT_APRILTAG_36h10=19, DICT_APRILTAG_36h11=20}"
+        "{ci             | 0     | Camera id}"
+        "{t              | 10000 | Program execution time in ms}"
+        "{shm            |       | Use shared memory to transmit data to other programs}";
+
 int main( int argc, char **argv ) {
+    cv::CommandLineParser parser(argc, argv, keys);
+    parser.about(about);
+
+    if(parser.has("h") || parser.has("help") || parser.has("?") || parser.has("usage")) {
+        parser.printMessage();
+        return 0;
+    }
 
     // Index webcam
-    int cam_idx = 0;
+    int cam_idx = parser.get<int>("ci");
     // Test duration
-    double test_duration = 60000;
+    double test_duration = parser.get<double>("t");
     // Shared memory flag
-    bool shm_flag = false;
-    // Test flag
-    bool test_flag = false;
-
-    // Process command line options.
-    if (argc > 1){
-        // Help option
-        if (cmdOptionExists(argv, argv+argc, "--help")) {
-            std::cout << "usage: localization [options]\n\nOptions:\n\n"
-                      << std::left << "  " << std::setw(15) << "--help" << "Display this information.\n"
-                      << "  " << std::setw(15) << "-cam <index>" << "Use webcamera with <index> in system.\n"
-                      << "  " << std::setw(15) << "-t <duration>" << "Set <duration> of program execution in ms.\n"
-                      << "  " << std::setw(15) << "-shared-memory" << "Use shared memory from boost to transfer measurements.\n"
-                      << "  " << std::setw(15) << "-test" << "Test cam. Show frame with aruco marker detection.\n\n";
-            return 0;
-        }
-        // Set webcam index option
-        if (cmdOptionExists(argv, argv+argc, "-cam")){
-            cam_idx = atoi(getCmdOption(argv, argv+argc, "-cam"));
-        }
-        // Set test duration option
-        if (cmdOptionExists(argv, argv+argc, "-t")){
-            test_duration = atof(getCmdOption(argv, argv+argc, "-t"));
-        }
-        // Shared memory flag
-        shm_flag = cmdOptionExists(argv, argv+argc, "-shared-memory");
-        // Test flag
-        test_flag = cmdOptionExists(argv, argv+argc, "-test");
-    }
+    bool shm_flag = parser.has("shm");
 
     shm::Transmitter<double> transmitter;
     if(shm_flag) {
@@ -51,21 +42,23 @@ int main( int argc, char **argv ) {
         }    
     }
 
-	td::TransferData transfer;
-	ArucoLocalization cv_system(cam_idx, cv::aruco::DICT_4X4_50);
-    if(test_flag) {
-        bool status = cv_system.localizate(&transfer);
-        if(status) {
-            cv_system.show_markers();
-            cv::waitKey();
-        }
-        else {
-            cv_system.show_frame();
-	        cv::waitKey();
-            std::cout << "Robot localization failed." << std::endl;
-        }
+    cv::aruco::PREDEFINED_DICTIONARY_NAME dictionary_name;
+    if (parser.has("d")) {
+        int dictionary_id = parser.get<int>("d");
+        dictionary_name = cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionary_id);
+    }
+    else {
+        std::cerr << "Dictionary not specified" << std::endl;
         return 0;
     }
+
+    if(!parser.check()) {
+        parser.printErrors();
+        return 0;
+    }
+
+	td::TransferData transfer;
+	ArucoLocalization cv_system(cam_idx, dictionary_name);
 	std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
     std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
     long long time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
@@ -83,13 +76,15 @@ int main( int argc, char **argv ) {
                 transmitter.data->at(5) = transfer.deltaEigenCartesian.y;
                 transmitter.data->at(6) = transfer.deltaAngle;
             }
-            std::cout << "|" << std::setw(15) << time;
-            std::cout << "|" << std::setw(15) << transfer.currGlobalCartesian.x;
-            std::cout << "|" << std::setw(15) << transfer.currGlobalCartesian.y;
-            std::cout << "|" << std::setw(15) << transfer.currAngle;
-            std::cout << "|" << std::setw(15) << transfer.deltaEigenCartesian.x;
-            std::cout << "|" << std::setw(15) << transfer.deltaEigenCartesian.y;
-            std::cout << "|" << std::setw(15) << transfer.deltaAngle << "|\n";
+            else {
+                std::cout << "|" << std::setw(15) << time;
+                std::cout << "|" << std::setw(15) << transfer.currGlobalCartesian.x;
+                std::cout << "|" << std::setw(15) << transfer.currGlobalCartesian.y;
+                std::cout << "|" << std::setw(15) << transfer.currAngle;
+                std::cout << "|" << std::setw(15) << transfer.deltaEigenCartesian.x;
+                std::cout << "|" << std::setw(15) << transfer.deltaEigenCartesian.y;
+                std::cout << "|" << std::setw(15) << transfer.deltaAngle << "|\n";
+            }
         }
         else {
             break;

@@ -14,11 +14,9 @@ install(TARGETS localization
         EXPORT ArucoLocalizationTargets
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin)
 
-# set header
-set(HEADER ${PROJECT_SOURCE_DIR}/include/cmdoptionparser.hpp)
-install(FILES ${HEADER} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev)
-
-
+# # set header
+# set(HEADER ${PROJECT_SOURCE_DIR}/include/cmdoptionparser.hpp)
+# install(FILES ${HEADER} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev)
 
 add_executable(generate_marker generate_marker.cpp)
 
