@@ -124,7 +124,7 @@ class ArucoLocalization {
 	 */
 	ArucoLocalization(int cam_index, cv::aruco::PREDEFINED_DICTIONARY_NAME dict_name);
 	
-	~ArucoLocalization() {};
+	~ArucoLocalization();
 
 	/**
 	 * Localize robot.

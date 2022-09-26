@@ -60,7 +60,6 @@ ArucoLocalization::ArucoLocalization(int cam_index, cv::aruco::PREDEFINED_DICTIO
 	webcam.set(cv::CAP_PROP_FOCUS, 0); // min: 0, max: 255, increment:5
 	webcam.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
 	webcam.set(cv::CAP_PROP_BUFFERSIZE, 1);
-	webcam.set(cv::CAP_PROP_FPS, 30);
 	// link: https://stackoverflow.com/a/70074022
 	webcam.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
 	detectorParameters = cv::aruco::DetectorParameters::create();
@@ -74,6 +73,10 @@ ArucoLocalization::ArucoLocalization(int cam_index, cv::aruco::PREDEFINED_DICTIO
 		std::cout << "Webcam not connected." << std::endl;
 		exit(1);
 	}
+}
+
+ArucoLocalization::~ArucoLocalization() {
+	webcam.release();
 }
 
 bool ArucoLocalization::localizate() {
