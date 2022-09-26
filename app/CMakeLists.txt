@@ -35,14 +35,14 @@ install(TARGETS generate_marker
 
 
         
-add_executable(detect_aruco_from_stream detect_aruco_from_stream.cpp)
+add_executable(detect_aruco_marker detect_aruco_marker.cpp)
 
-target_link_libraries(detect_aruco_from_stream PUBLIC arucolocalization)
+target_link_libraries(detect_aruco_marker PUBLIC arucolocalization)
 
-target_include_directories(detect_aruco_from_stream PUBLIC
+target_include_directories(detect_aruco_marker PUBLIC
                            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
                            $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
 
-install(TARGETS detect_aruco_from_stream
+install(TARGETS detect_aruco_marker
         EXPORT ArucoLocalizationTargets
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin)
