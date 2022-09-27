@@ -127,7 +127,7 @@ class ArucoLocalization {
 	/**
 	 * Localize marker.
 	 */
-	bool detectMarkers();
+	int detectMarkers();
 
 	/**
 	 * Calculate first detected marker positions on the plane.

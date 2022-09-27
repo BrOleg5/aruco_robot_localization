@@ -55,20 +55,20 @@ ArucoLocalization::ArucoLocalization(const cv::VideoCapture& video_capture, cv::
 	dictionary = cv::aruco::getPredefinedDictionary(dict_name);
 }
 
-bool ArucoLocalization::detectMarkers() {
+int ArucoLocalization::detectMarkers() {
 	videoCapture >> currentVideoFrame;
 	if(currentVideoFrame.empty()) {
 		std::cout << "End of video file.\n";
-		return false;
+		return 2;
 	}
 	markerIds.clear();
 	cv::aruco::detectMarkers(currentVideoFrame, dictionary, markerCorners, markerIds, detectorParameters, rejectedCandidates);
 	if (!markerCorners.empty() && !markerIds.empty()) {
-		return true;
+		return 0;
 	}
 	else {
 		std::cerr << "Error detecting aruco marker" << std::endl;
-		return false;
+		return 1;
 	}
 }
 

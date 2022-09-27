@@ -115,8 +115,8 @@ int main( int argc, char **argv ) {
     while ((time <= test_duration) || (test_duration == 0)) {
         current_time = std::chrono::steady_clock::now();
         time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
-        bool status = cv_system.detectMarkers();
-        if (status) {
+        int status = cv_system.detectMarkers();
+        if (status == 0) {
             if(has_marker_id){
                 if(!cv_system.estimatePosition(&transfer, markerID)) {
                     return 5;
@@ -144,10 +144,13 @@ int main( int argc, char **argv ) {
                 std::cout << "|" << std::setw(15) << transfer.deltaAngle << "|\n";
             }
         }
-        else {
+        else if(status == 1) {
             std::cout << "Robot localization failed." << std::endl;
             video_capture.release();
             return 6;
+        }
+        else if(status == 2) {
+            break;
         }
     }
     video_capture.release();
