@@ -55,7 +55,7 @@ ArucoLocalization::ArucoLocalization(const cv::VideoCapture& video_capture, cv::
 	dictionary = cv::aruco::getPredefinedDictionary(dict_name);
 }
 
-bool ArucoLocalization::localizate() {
+bool ArucoLocalization::detectMarkers() {
 	videoCapture >> currentVideoFrame;
 	if(currentVideoFrame.empty()) {
 		std::cout << "End of video file.\n";
@@ -65,58 +65,29 @@ bool ArucoLocalization::localizate() {
 	markerIds.clear();
 	//Detecting the aruco markers
 	cv::aruco::detectMarkers(currentVideoFrame, dictionary, markerCorners, markerIds, detectorParameters, rejectedCandidates);
-	if (!markerCorners.empty()) {
-		//Checking if there are any markers
-		if (markerIds.empty()) {         
-			std::cerr << "Not aruco markers." << std::endl;
-			return false;
+	if (!markerCorners.empty() && !markerIds.empty()) {
+		for (int i = 0; i < 3; i++) {
+					arucoCorner[i].x = markerCorners[0][i].x - 0.105 * (markerCorners[0][i].x - 620);
+					arucoCorner[i].y = markerCorners[0][i].y - 0.105 * (markerCorners[0][i].y - 540);
 		}
 		return true;
 	}
 	else {
-		std::cerr << "Error detecting aruco, try replacing Robotino." << std::endl;
+		std::cerr << "Error detecting aruco marker" << std::endl;
 		return false;
 	}
 }
 
-bool ArucoLocalization::localizate(td::TransferData* data) {
-	videoCapture >> currentVideoFrame;
-	if(currentVideoFrame.empty()) {
-		std::cout << "End of video file.\n";
-		return false;
-	}
-	//Clearing the markers' indexes vector
-	markerIds.clear();
-	//Detecting the aruco markers
-	cv::aruco::detectMarkers(currentVideoFrame, dictionary, markerCorners, markerIds, detectorParameters, rejectedCandidates);
-	if (!markerCorners.empty()) {
-		//Checking if there are any markers       
-		if (!markerIds.empty()) {
-			//If yes, setting the corners' cartesian         
-			for (int i = 0; i < 3; i++) {
-				arucoCorner[i].x = markerCorners[0][i].x - 0.105 * (markerCorners[0][i].x - 620);
-				arucoCorner[i].y = markerCorners[0][i].y - 0.105 * (markerCorners[0][i].y - 540);
-			}
-		}
-		else {             
-			std::cerr << "Not aruco markers." << std::endl;
-			return false;
-		}
-		//Calculating current cartesian position in pixels 
-		data->prevGlobalCartesian.x = data->currGlobalCartesian.x;
-		data->prevGlobalCartesian.y = data->currGlobalCartesian.y;
-		data->currGlobalCartesian.x = (arucoCorner[0].x + arucoCorner[2].x) / 2;
-		data->currGlobalCartesian.y = (arucoCorner[0].y + arucoCorner[2].y) / 2;
-		//Finding the angle of the aruco vector              
-		data->prevAngle = data->currAngle;
-		data->Angle(arucoCorner);
-		data->DeltaEigen();
-		return true;
-	}
-	else {
-		std::cerr << "Error detecting aruco, try replacing Robotino." << std::endl;
-		return false;
-	}
+void ArucoLocalization::estimatePosition(td::TransferData* data) {
+	//Calculating current cartesian position in pixels 
+	data->prevGlobalCartesian.x = data->currGlobalCartesian.x;
+	data->prevGlobalCartesian.y = data->currGlobalCartesian.y;
+	data->currGlobalCartesian.x = (arucoCorner[0].x + arucoCorner[2].x) / 2;
+	data->currGlobalCartesian.y = (arucoCorner[0].y + arucoCorner[2].y) / 2;
+	//Finding the angle of the aruco vector              
+	data->prevAngle = data->currAngle;
+	data->Angle(arucoCorner);
+	data->DeltaEigen();
 }
 
 void ArucoLocalization::show_markers() {

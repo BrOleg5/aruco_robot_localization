@@ -124,16 +124,16 @@ class ArucoLocalization {
 	~ArucoLocalization() {};
 
 	/**
-	 * Localize robot.
+	 * Localize marker.
 	 */
-	bool localizate();
+	bool detectMarkers();
 
 	/**
-	 * Localize robot.
+	 * Calculate marker positions on the plane.
 	 * 
-	 * @param data storage robot's global coordinates and local coordinate change.
+	 * @param data storage marker's global coordinates and local coordinate change.
 	 */
-	bool localizate(td::TransferData* data);
+	void estimatePosition(td::TransferData* data);
 
 	/**
 	 * Open window with frame and drew aruco markers.

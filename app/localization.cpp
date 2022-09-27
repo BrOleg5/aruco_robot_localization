@@ -108,8 +108,9 @@ int main( int argc, char **argv ) {
     while ((time <= test_duration) || (test_duration == 0)) {
         current_time = std::chrono::steady_clock::now();
         time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
-        bool status = cv_system.localizate(&transfer);
+        bool status = cv_system.detectMarkers();
         if (status) {
+            cv_system.estimatePosition(&transfer);
             if (shm_flag){
                 transmitter.data->at(0) = (double) time;
                 transmitter.data->at(1) = transfer.currGlobalCartesian.x;

@@ -88,7 +88,7 @@ int main( int argc, char **argv ) {
     long long time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
     while(true) {
         start_time = std::chrono::steady_clock::now();
-        bool status = cv_system.localizate();
+        bool status = cv_system.detectMarkers();
         current_time = std::chrono::steady_clock::now();
         time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
         std::cout << "Time process one frame: " << time << "ms\n";
