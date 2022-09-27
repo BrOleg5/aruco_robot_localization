@@ -57,6 +57,10 @@ ArucoLocalization::ArucoLocalization(const cv::VideoCapture& video_capture, cv::
 
 bool ArucoLocalization::localizate() {
 	videoCapture >> currentVideoFrame;
+	if(currentVideoFrame.empty()) {
+		std::cout << "End of video file.\n";
+		return false;
+	}
 	//Clearing the markers' indexes vector
 	markerIds.clear();
 	//Detecting the aruco markers
@@ -64,19 +68,23 @@ bool ArucoLocalization::localizate() {
 	if (!markerCorners.empty()) {
 		//Checking if there are any markers
 		if (markerIds.empty()) {         
-			std::cout << "Not aruco markers." << std::endl;
+			std::cerr << "Not aruco markers." << std::endl;
 			return false;
 		}
 		return true;
 	}
 	else {
-		std::cout << "Error detecting aruco, try replacing Robotino." << std::endl;
+		std::cerr << "Error detecting aruco, try replacing Robotino." << std::endl;
 		return false;
 	}
 }
 
 bool ArucoLocalization::localizate(td::TransferData* data) {
 	videoCapture >> currentVideoFrame;
+	if(currentVideoFrame.empty()) {
+		std::cout << "End of video file.\n";
+		return false;
+	}
 	//Clearing the markers' indexes vector
 	markerIds.clear();
 	//Detecting the aruco markers
@@ -91,7 +99,7 @@ bool ArucoLocalization::localizate(td::TransferData* data) {
 			}
 		}
 		else {             
-			std::cout << "Not aruco markers." << std::endl;
+			std::cerr << "Not aruco markers." << std::endl;
 			return false;
 		}
 		//Calculating current cartesian position in pixels 
@@ -106,7 +114,7 @@ bool ArucoLocalization::localizate(td::TransferData* data) {
 		return true;
 	}
 	else {
-		std::cout << "Error detecting aruco, try replacing Robotino." << std::endl;
+		std::cerr << "Error detecting aruco, try replacing Robotino." << std::endl;
 		return false;
 	}
 }

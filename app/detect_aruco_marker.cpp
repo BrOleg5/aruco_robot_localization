@@ -11,7 +11,8 @@ const std::string keys  =
         "DICT_6X6_50=8, DICT_6X6_100=9, DICT_6X6_250=10, DICT_6X6_1000=11, DICT_7X7_50=12,"
         "DICT_7X7_100=13, DICT_7X7_250=14, DICT_7X7_1000=15, DICT_ARUCO_ORIGINAL = 16,"
         "DICT_APRILTAG_16h5=17, DICT_APRILTAG_25h9=18, DICT_APRILTAG_36h10=19, DICT_APRILTAG_36h11=20}"
-        "{ci       | 0     | Camera id if input doesnt come from video (-v) }";
+        "{ci       |       | Camera id, if ommited, input comes from video file }"
+        "{v        |       | Input from video file if input doesnt come from camera (--ci) }";
 
 int main( int argc, char **argv ) {
     cv::CommandLineParser parser(argc, argv, keys);
@@ -29,36 +30,56 @@ int main( int argc, char **argv ) {
     }
     else {
         std::cerr << "Dictionary not specified" << std::endl;
-        return 0;
+        return 1;
     }
 
     cv::VideoCapture video_capture;
-    int cam_id = parser.get<int>("ci");
-    #ifdef WIN32
-        video_capture.open(cam_id, cv::CAP_DSHOW);
-    #else
-        video_capture.open(cam_id);
-    #endif
-    video_capture.set(cv::CAP_PROP_FRAME_WIDTH, 1920);
-    video_capture.set(cv::CAP_PROP_FRAME_HEIGHT, 1080);
-    video_capture.set(cv::CAP_PROP_FOCUS, 0); // min: 0, max: 255, increment:5
-    video_capture.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
-    video_capture.set(cv::CAP_PROP_BUFFERSIZE, 1);
-    // link: https://stackoverflow.com/a/70074022
-    video_capture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
+    if(parser.has("ci")) {
+        int cam_id = parser.get<int>("ci");
+        #ifdef WIN32
+            video_capture.open(cam_id, cv::CAP_DSHOW);
+        #else
+            video_capture.open(cam_id);
+        #endif
+        video_capture.set(cv::CAP_PROP_FRAME_WIDTH, 1920);
+        video_capture.set(cv::CAP_PROP_FRAME_HEIGHT, 1080);
+        video_capture.set(cv::CAP_PROP_FOCUS, 0); // min: 0, max: 255, increment:5
+        video_capture.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
+        video_capture.set(cv::CAP_PROP_BUFFERSIZE, 1);
+        // link: https://stackoverflow.com/a/70074022
+        #ifdef WIN32
+            video_capture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
+        #endif
 
-    //Checking for the video_capture to be connected 
-    if (video_capture.isOpened()) {
-        std::cout << "video_capture connected." << std::endl;
+        //Checking for the camera to be connected 
+        if (video_capture.isOpened()) {
+            std::cout << "Camera connected." << std::endl;
+        }
+        else {
+            std::cerr << "Camera not connected." << std::endl;
+            return 2;
+        }
+    }
+    else if(parser.has("v")){
+        std::string videoFile = parser.get<std::string>("v");
+        video_capture.open(videoFile);
+        //Checking for the video file to be opened 
+        if (video_capture.isOpened()) {
+            std::cout << "Video file opened." << std::endl;
+        }
+        else {
+            std::cerr << "Video file not opened." << std::endl;
+            return 2;
+        }
     }
     else {
-        std::cout << "video_capture not connected." << std::endl;
-        exit(1);
+        std::cerr << "Camera of video file not specified" << std::endl;
+        return 3;
     }
 
     if(!parser.check()) {
         parser.printErrors();
-        return 0;
+        return 4;
     }
 
 	ArucoLocalization cv_system(video_capture, dictionary_name);
@@ -81,7 +102,8 @@ int main( int argc, char **argv ) {
             cv_system.show_frame();
             cv::waitKey();
             std::cout << "Robot localization failed." << std::endl;
-            return 1;
+            video_capture.release();
+            return 5;
         }
     }
     video_capture.release();
