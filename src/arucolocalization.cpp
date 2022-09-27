@@ -45,42 +45,18 @@ void td::TransferData::DeltaEigen() {
 	deltaEigenCartesian.y = delta.x * cos(currAngle / 180 * PI) * (-1) + delta.y * sin(currAngle / 180 * PI);
 }
 
-ArucoLocalization::ArucoLocalization(int cam_index, cv::aruco::PREDEFINED_DICTIONARY_NAME dict_name) {
+ArucoLocalization::ArucoLocalization(const cv::VideoCapture& video_capture, cv::aruco::PREDEFINED_DICTIONARY_NAME dict_name) {
 	for (int i = 0; i < 3; i++) {
 		arucoCorner[i].x = 0;
 		arucoCorner[i].y = 0;
 	}
-	#ifdef WIN32
-		webcam.open(cam_index, cv::CAP_DSHOW);
-	#else
-		webcam.open(cam_index);
-	#endif
-	webcam.set(cv::CAP_PROP_FRAME_WIDTH, 1920);
-	webcam.set(cv::CAP_PROP_FRAME_HEIGHT, 1080);
-	webcam.set(cv::CAP_PROP_FOCUS, 0); // min: 0, max: 255, increment:5
-	webcam.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
-	webcam.set(cv::CAP_PROP_BUFFERSIZE, 1);
-	// link: https://stackoverflow.com/a/70074022
-	webcam.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
+	videoCapture = video_capture;
 	detectorParameters = cv::aruco::DetectorParameters::create();
 	dictionary = cv::aruco::getPredefinedDictionary(dict_name);
-
-	//Checking for the webcam to be connected 
-	if (webcam.isOpened()) {
-		std::cout << "Webcam connected." << std::endl;
-	}
-	else {
-		std::cout << "Webcam not connected." << std::endl;
-		exit(1);
-	}
-}
-
-ArucoLocalization::~ArucoLocalization() {
-	webcam.release();
 }
 
 bool ArucoLocalization::localizate() {
-	webcam >> currentVideoFrame;
+	videoCapture >> currentVideoFrame;
 	//Clearing the markers' indexes vector
 	markerIds.clear();
 	//Detecting the aruco markers
@@ -100,7 +76,7 @@ bool ArucoLocalization::localizate() {
 }
 
 bool ArucoLocalization::localizate(td::TransferData* data) {
-	webcam >> currentVideoFrame;
+	videoCapture >> currentVideoFrame;
 	//Clearing the markers' indexes vector
 	markerIds.clear();
 	//Detecting the aruco markers

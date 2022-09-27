@@ -85,14 +85,11 @@ class ArucoLocalization {
 	cv::Point2d arucoCorner[3];
 
 	/**
-	 * Frame for webcam capture.
+	 * Frame for VideoCapture.
 	 */
 	cv::Mat currentVideoFrame;
 
-	/**
-	 * Webcam.
-	 */
-	cv::VideoCapture webcam;
+	cv::VideoCapture videoCapture;
 
 	/**
 	 * Vector for aruco markers' indexes.
@@ -117,14 +114,14 @@ class ArucoLocalization {
 	public:
 
 	/**
-	 * Constructor. Connect webcamera and initialization detector.
+	 * Constructor.
 	 * 
-	 * @param cam_index index of webcamera in system.
+	 * @param video_capture cv::VideoCapture object.
 	 * @param dict_name name of aruco marker dictonary.
 	 */
-	ArucoLocalization(int cam_index, cv::aruco::PREDEFINED_DICTIONARY_NAME dict_name);
+	ArucoLocalization(const cv::VideoCapture& video_capture, cv::aruco::PREDEFINED_DICTIONARY_NAME dict_name);
 	
-	~ArucoLocalization();
+	~ArucoLocalization() {};
 
 	/**
 	 * Localize robot.

@@ -25,8 +25,6 @@ int main( int argc, char **argv ) {
         return 0;
     }
 
-    // Index webcam
-    int cam_idx = parser.get<int>("ci");
     // Test duration
     double test_duration = parser.get<double>("t");
     // Shared memory flag
@@ -52,13 +50,37 @@ int main( int argc, char **argv ) {
         return 0;
     }
 
+    cv::VideoCapture video_capture;
+    int cam_id = parser.get<int>("ci");
+    #ifdef WIN32
+        video_capture.open(cam_id, cv::CAP_DSHOW);
+    #else
+        video_capture.open(cam_id);
+    #endif
+    video_capture.set(cv::CAP_PROP_FRAME_WIDTH, 1920);
+    video_capture.set(cv::CAP_PROP_FRAME_HEIGHT, 1080);
+    video_capture.set(cv::CAP_PROP_FOCUS, 0); // min: 0, max: 255, increment:5
+    video_capture.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
+    video_capture.set(cv::CAP_PROP_BUFFERSIZE, 1);
+    // link: https://stackoverflow.com/a/70074022
+    video_capture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
+
+    //Checking for the video_capture to be connected 
+    if (video_capture.isOpened()) {
+        std::cout << "video_capture connected." << std::endl;
+    }
+    else {
+        std::cout << "video_capture not connected." << std::endl;
+        exit(1);
+    }
+
     if(!parser.check()) {
         parser.printErrors();
         return 0;
     }
 
 	td::TransferData transfer;
-	ArucoLocalization cv_system(cam_idx, dictionary_name);
+	ArucoLocalization cv_system(video_capture, dictionary_name);
 	std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
     std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
     long long time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
@@ -90,5 +112,6 @@ int main( int argc, char **argv ) {
             break;
         }
     }
+    video_capture.release();
 	return 0;
 }
