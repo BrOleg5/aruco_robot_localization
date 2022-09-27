@@ -12,6 +12,7 @@
 #include "opencv2/aruco.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
+#include <algorithm>
 
 namespace td {
 
@@ -129,11 +130,19 @@ class ArucoLocalization {
 	bool detectMarkers();
 
 	/**
-	 * Calculate marker positions on the plane.
+	 * Calculate first detected marker positions on the plane.
 	 * 
 	 * @param data storage marker's global coordinates and local coordinate change.
 	 */
-	void estimatePosition(td::TransferData* data);
+	bool estimatePosition(td::TransferData* data);
+
+	/**
+	 * Calculate marker positions on the plane.
+	 * 
+	 * @param data storage marker's global coordinates and local coordinate change.
+	 * @param markerID ID of marker that position calculating
+	 */
+	bool estimatePosition(td::TransferData* data, int markerID);
 
 	/**
 	 * Open window with frame and drew aruco markers.
@@ -141,6 +150,14 @@ class ArucoLocalization {
 	 * @remark Call after localization (function localize).
 	 */
 	void show_markers();
+
+	/**
+	 * Open window with frame and drew aruco marker.
+	 * 
+	 * @param markerID ID of marker
+	 * @remark Call after localization (function localize).
+	 */
+	void show_marker(int markerID);
 
 	/**
 	 * Open window with frame.

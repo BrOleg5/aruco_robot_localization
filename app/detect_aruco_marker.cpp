@@ -11,8 +11,9 @@ const std::string keys  =
         "DICT_6X6_50=8, DICT_6X6_100=9, DICT_6X6_250=10, DICT_6X6_1000=11, DICT_7X7_50=12,"
         "DICT_7X7_100=13, DICT_7X7_250=14, DICT_7X7_1000=15, DICT_ARUCO_ORIGINAL = 16,"
         "DICT_APRILTAG_16h5=17, DICT_APRILTAG_25h9=18, DICT_APRILTAG_36h10=19, DICT_APRILTAG_36h11=20}"
-        "{ci       |       | Camera id, if ommited, input comes from video file }"
-        "{v        |       | Input from video file if input doesnt come from camera (--ci) }";
+        "{id             |       | Marker id, if ommited, detect all markers from dictionaty }"
+        "{ci             |       | Camera id, if ommited, input comes from video file }"
+        "{v              |       | Input from video file if input doesnt come from camera (--ci) }";
 
 int main( int argc, char **argv ) {
     cv::CommandLineParser parser(argc, argv, keys);
@@ -77,6 +78,12 @@ int main( int argc, char **argv ) {
         return 3;
     }
 
+    bool has_marker_id = parser.has("id");
+    int markerID = 0;
+    if(has_marker_id) {
+        markerID = parser.get<int>("id");
+    }
+
     if(!parser.check()) {
         parser.printErrors();
         return 4;
@@ -91,9 +98,14 @@ int main( int argc, char **argv ) {
         bool status = cv_system.detectMarkers();
         current_time = std::chrono::steady_clock::now();
         time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
-        std::cout << "Time process one frame: " << time << "ms\n";
+        std::cout << "Time process one frame: " << time << " ms\n";
         if(status) {
-            cv_system.show_markers();
+            if(has_marker_id) {
+                cv_system.show_marker(markerID);
+            }
+            else {
+                cv_system.show_markers();
+            }
             if(cv::pollKey() == 'q') {
                 break;
             }

@@ -61,15 +61,9 @@ bool ArucoLocalization::detectMarkers() {
 		std::cout << "End of video file.\n";
 		return false;
 	}
-	//Clearing the markers' indexes vector
 	markerIds.clear();
-	//Detecting the aruco markers
 	cv::aruco::detectMarkers(currentVideoFrame, dictionary, markerCorners, markerIds, detectorParameters, rejectedCandidates);
 	if (!markerCorners.empty() && !markerIds.empty()) {
-		for (int i = 0; i < 3; i++) {
-					arucoCorner[i].x = markerCorners[0][i].x - 0.105 * (markerCorners[0][i].x - 620);
-					arucoCorner[i].y = markerCorners[0][i].y - 0.105 * (markerCorners[0][i].y - 540);
-		}
 		return true;
 	}
 	else {
@@ -78,25 +72,71 @@ bool ArucoLocalization::detectMarkers() {
 	}
 }
 
-void ArucoLocalization::estimatePosition(td::TransferData* data) {
-	//Calculating current cartesian position in pixels 
-	data->prevGlobalCartesian.x = data->currGlobalCartesian.x;
-	data->prevGlobalCartesian.y = data->currGlobalCartesian.y;
-	data->currGlobalCartesian.x = (arucoCorner[0].x + arucoCorner[2].x) / 2;
-	data->currGlobalCartesian.y = (arucoCorner[0].y + arucoCorner[2].y) / 2;
-	//Finding the angle of the aruco vector              
-	data->prevAngle = data->currAngle;
-	data->Angle(arucoCorner);
-	data->DeltaEigen();
+bool ArucoLocalization::estimatePosition(td::TransferData* data) {
+		// Calculating corners position of detecting Aruco marker
+		for (int i = 0; i < 3; i++) {
+			arucoCorner[i].x = markerCorners[0][i].x - 0.105 * (markerCorners[0][i].x - 620);
+			arucoCorner[i].y = markerCorners[0][i].y - 0.105 * (markerCorners[0][i].y - 540);
+		}
+		//Calculating current cartesian position in pixels 
+		data->prevGlobalCartesian.x = data->currGlobalCartesian.x;
+		data->prevGlobalCartesian.y = data->currGlobalCartesian.y;
+		data->currGlobalCartesian.x = (arucoCorner[0].x + arucoCorner[2].x) / 2;
+		data->currGlobalCartesian.y = (arucoCorner[0].y + arucoCorner[2].y) / 2;
+		//Finding the angle of the aruco vector              
+		data->prevAngle = data->currAngle;
+		data->Angle(arucoCorner);
+		data->DeltaEigen();
+		return true;
 }
 
-void ArucoLocalization::show_markers() {
-	//Resulting image to be shown                          
+bool ArucoLocalization::estimatePosition(td::TransferData* data, int markerID) {
+	std::vector<int>::iterator markerIterator = std::find(markerIds.begin(), markerIds.end(), markerID);
+	if(markerIterator != markerIds.end()) {
+		int markerIndex = static_cast<int>(markerIterator - markerIds.begin());
+		// Calculating corners position of detecting Aruco marker
+		for (int i = 0; i < 3; i++) {
+			arucoCorner[i].x = markerCorners[markerIndex][i].x - 0.105 * (markerCorners[markerIndex][i].x - 620);
+			arucoCorner[i].y = markerCorners[markerIndex][i].y - 0.105 * (markerCorners[markerIndex][i].y - 540);
+		}
+		//Calculating current cartesian position in pixels 
+		data->prevGlobalCartesian.x = data->currGlobalCartesian.x;
+		data->prevGlobalCartesian.y = data->currGlobalCartesian.y;
+		data->currGlobalCartesian.x = (arucoCorner[0].x + arucoCorner[2].x) / 2;
+		data->currGlobalCartesian.y = (arucoCorner[0].y + arucoCorner[2].y) / 2;
+		//Finding the angle of the aruco vector              
+		data->prevAngle = data->currAngle;
+		data->Angle(arucoCorner);
+		data->DeltaEigen();
+		return true;
+	}
+	else {
+		std::cerr << "Marker with ID=" << markerID << " not searched.\n";
+		return false;
+	}
+}
+
+void ArucoLocalization::show_markers() {    
 	cv::Mat outputImage;
-	//Drawing the detection square in the image
 	currentVideoFrame.copyTo(outputImage);
 	cv::aruco::drawDetectedMarkers(outputImage, markerCorners, markerIds);
 	cv::imshow("Found aruco markers", outputImage);
+}
+
+void ArucoLocalization::show_marker(int markerID) {
+	std::vector<int>::iterator markerIterator = std::find(markerIds.begin(), markerIds.end(), markerID);
+	if(markerIterator != markerIds.end()) {
+		int markerIndex = static_cast<int>(markerIterator - markerIds.begin());
+		cv::Mat outputImage;
+		currentVideoFrame.copyTo(outputImage);
+		std::vector<std::vector<cv::Point2f>> oneMarkerCorner = {markerCorners[markerIndex]};
+		std::vector<int> oneMarkerIds = {markerIds[markerIndex]};
+		cv::aruco::drawDetectedMarkers(outputImage, oneMarkerCorner, oneMarkerIds);
+		cv::imshow("Found aruco marker", outputImage);
+	}
+	else {
+		std::cerr << "Marker with ID=" << markerID << " not searched.\n";
+	}
 }
 
 void ArucoLocalization::show_frame() {
