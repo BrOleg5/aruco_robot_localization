@@ -13,7 +13,8 @@ const std::string keys  =
         "DICT_APRILTAG_16h5=17, DICT_APRILTAG_25h9=18, DICT_APRILTAG_36h10=19, DICT_APRILTAG_36h11=20}"
         "{id             |       | Marker id, if ommited, detect all markers from dictionaty }"
         "{ci             |       | Camera id, if ommited, input comes from video file }"
-        "{v              |       | Input from video file if input doesnt come from camera (--ci) }";
+        "{iv              |       | Input from video file if input doesnt come from camera (--ci) }"
+        "{ov              |       | Input from video file if input doesnt come from camera (--ci) }";
 
 int main( int argc, char **argv ) {
     cv::CommandLineParser parser(argc, argv, keys);
@@ -61,8 +62,8 @@ int main( int argc, char **argv ) {
             return 2;
         }
     }
-    else if(parser.has("v")){
-        std::string videoFile = parser.get<std::string>("v");
+    else if(parser.has("iv")){
+        std::string videoFile = parser.get<std::string>("iv");
         video_capture.open(videoFile);
         //Checking for the video file to be opened 
         if (video_capture.isOpened()) {
@@ -84,12 +85,20 @@ int main( int argc, char **argv ) {
         markerID = parser.get<int>("id");
     }
 
+    bool write_video = parser.has("ov");
+    cv::VideoWriter video_writer;
+    if(write_video) {
+        std::string output_file = parser.get<std::string>("ov");
+        video_writer = cv::VideoWriter(output_file, -1, 30, cv::Size(1920, 1080));
+    }
+
     if(!parser.check()) {
         parser.printErrors();
         return 4;
     }
 
 	ArucoLocalization cv_system(video_capture, dictionary_name);
+    cv::Mat frame;
     std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
     std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
     long long time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
@@ -101,7 +110,11 @@ int main( int argc, char **argv ) {
         std::cout << "Time process one frame: " << time << " ms\n";
         if(status == 0) {
             if(has_marker_id) {
-                cv_system.show_marker(markerID);
+                frame = cv_system.draw_marker(markerID);
+                if(write_video) {
+                    video_writer.write(frame);
+                }
+                cv::imshow("Found aruco marker", frame);
             }
             else {
                 cv_system.show_markers();

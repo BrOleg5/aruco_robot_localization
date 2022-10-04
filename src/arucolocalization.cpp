@@ -123,22 +123,26 @@ void ArucoLocalization::show_markers() {
 	cv::imshow("Found aruco markers", outputImage);
 }
 
-void ArucoLocalization::show_marker(int markerID) {
+cv::Mat ArucoLocalization::draw_marker(int markerID) {
+	cv::Mat outputImage;
+	currentVideoFrame.copyTo(outputImage);
 	std::vector<int>::iterator markerIterator = std::find(markerIds.begin(), markerIds.end(), markerID);
 	if(markerIterator != markerIds.end()) {
 		int markerIndex = static_cast<int>(markerIterator - markerIds.begin());
-		cv::Mat outputImage;
-		currentVideoFrame.copyTo(outputImage);
 		std::vector<std::vector<cv::Point2f>> oneMarkerCorner = {markerCorners[markerIndex]};
 		std::vector<int> oneMarkerIds = {markerIds[markerIndex]};
 		cv::aruco::drawDetectedMarkers(outputImage, oneMarkerCorner, oneMarkerIds);
-		cv::imshow("Found aruco marker", outputImage);
 	}
 	else {
 		std::cerr << "Marker with ID=" << markerID << " not searched.\n";
 	}
+	return outputImage;
 }
 
 void ArucoLocalization::show_frame() {
 	cv::imshow("Cam frame", currentVideoFrame);
+}
+
+cv::Mat ArucoLocalization::get_frame() {
+	return currentVideoFrame;
 }

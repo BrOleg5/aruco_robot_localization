@@ -151,13 +151,9 @@ class ArucoLocalization {
 	 */
 	void show_markers();
 
-	/**
-	 * Open window with frame and drew aruco marker.
-	 * 
-	 * @param markerID ID of marker
-	 * @remark Call after localization (function localize).
-	 */
-	void show_marker(int markerID);
+	cv::Mat draw_marker(int markerID);
+
+	cv::Mat get_frame();
 
 	/**
 	 * Open window with frame.
