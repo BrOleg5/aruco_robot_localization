@@ -133,6 +133,7 @@ int main( int argc, char **argv ) {
 	std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
     std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
     long long time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
+    long long prev_time = time;
     while ((time <= test_duration) || (test_duration == 0)) {
         current_time = std::chrono::steady_clock::now();
         time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
@@ -156,13 +157,14 @@ int main( int argc, char **argv ) {
                 transmitter.data->at(6) = transfer.deltaAngle;
             }
             else {
+                float dt = static_cast<float>(time - prev_time) / 1000;
                 std::cout << " | " << std::setw(15) << time;
                 std::cout << " | " << std::setw(15) << transfer.currGlobalCartesian.x;
                 std::cout << " | " << std::setw(15) << transfer.currGlobalCartesian.y;
                 std::cout << " | " << std::setw(15) << transfer.currAngle;
-                std::cout << " | " << std::setw(15) << transfer.deltaEigenCartesian.x;
-                std::cout << " | " << std::setw(15) << transfer.deltaEigenCartesian.y;
-                std::cout << " | " << std::setw(15) << transfer.deltaAngle << " |\n";
+                std::cout << " | " << std::setw(15) << transfer.deltaEigenCartesian.x / dt;
+                std::cout << " | " << std::setw(15) << transfer.deltaEigenCartesian.y / dt;
+                std::cout << " | " << std::setw(15) << transfer.deltaAngle / dt << " |\n";
             }
         }
         else if(status == 1) {
@@ -173,6 +175,7 @@ int main( int argc, char **argv ) {
         else if(status == 2) {
             break;
         }
+        prev_time = time;
     }
     video_capture.release();
 	return 0;
