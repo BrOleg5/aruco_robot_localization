@@ -5,9 +5,6 @@
 #	define PI 3.14159265358979323846f
 #endif
 
-#define MMperPIX_X 2.1659f
-#define MMperPIX_Y 2.1131f
-
 #include <iostream>
 #include "opencv2/aruco.hpp"
 #include "opencv2/highgui.hpp"
@@ -54,11 +51,13 @@ namespace td {
 		 */
 		float deltaAngle;
 
+		cv::Point2f pixelResolution;
+
 		/**
 		 * Initializtion each coordinate as zero.
 		 */
-		TransferData() : currGlobalCartesian(0.0f, 0.0f), prevGlobalCartesian(0.0f, 0.0f), currAngle(0.0f),
-						 prevAngle(0.0f), deltaAngle(0.0f), deltaEigenCartesian(0.0f, 0.0f) {}
+		TransferData(const cv::Point2f& pixel_resolution) : currGlobalCartesian(0.0f, 0.0f), prevGlobalCartesian(0.0f, 0.0f), currAngle(0.0f),
+						 prevAngle(0.0f), deltaAngle(0.0f), deltaEigenCartesian(0.0f, 0.0f), pixelResolution(pixel_resolution) {}
 		
 		~TransferData() {}
 
@@ -74,6 +73,8 @@ namespace td {
 		 */
 		void DeltaEigen();
 	};
+
+	float deg2rad(float deg);
 }
 
 /**
@@ -119,6 +120,8 @@ class ArucoLocalization {
 	 */
 	cv::Ptr<cv::aruco::Dictionary> dictionary;
 
+	cv::Point2f pixelResolution;
+
 	public:
 
 	/**
@@ -127,9 +130,10 @@ class ArucoLocalization {
 	 * @param video_capture cv::VideoCapture object.
 	 * @param dict_name name of aruco marker dictonary.
 	 */
-	ArucoLocalization(const cv::VideoCapture& video_capture, cv::aruco::PREDEFINED_DICTIONARY_NAME dict_name);
+	ArucoLocalization(const cv::VideoCapture& video_capture, 
+				 	  cv::aruco::PREDEFINED_DICTIONARY_NAME dict_name);
 	
-	~ArucoLocalization() {};
+	~ArucoLocalization() {}
 
 	/**
 	 * Localize marker.

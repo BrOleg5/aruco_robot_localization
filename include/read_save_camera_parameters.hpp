@@ -2,7 +2,7 @@
 #include <opencv2/core/persistence.hpp>
 
 inline static bool readCameraParameters(std::string filename, cv::Point2f& pixelResolution) {
-    cv::FileStorage fs(filename, cv::FileStorage::READ || cv::FileStorage::FORMAT_JSON);
+    cv::FileStorage fs(filename, cv::FileStorage::READ);
     if (!fs.isOpened()) {
         return false;
     }
@@ -12,7 +12,9 @@ inline static bool readCameraParameters(std::string filename, cv::Point2f& pixel
     return true;
 }
 
-inline static bool saveCameraParams(const std::string &filename, const cv::Point2f& pixelResolution, float markerSize, const cv::Point2f& std) {
+inline static bool saveCameraParams(const std::string &filename, const cv::Point2f& pixelResolution, 
+                                    float markerSize,
+                                    const cv::Point2f& std) {
     cv::FileStorage fs(filename, cv::FileStorage::WRITE || cv::FileStorage::FORMAT_JSON);
     if (!fs.isOpened()) {
         return false;

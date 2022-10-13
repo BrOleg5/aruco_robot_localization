@@ -3,6 +3,7 @@
 #include "sharedmemory.hpp"
 #include <chrono>
 #include <iomanip>
+#include "read_save_camera_parameters.hpp"
 
 const std::string about = "Localization of Aruco marker.";
 const std::string keys  =
@@ -16,6 +17,7 @@ const std::string keys  =
         "{ci             |       | Camera id, if ommited, input comes from video file }"
         "{v              |       | Input from video file if input doesnt come from camera (--ci) }"
         "{t              | 0     | Program execution time in ms. If it equals 0, application run until user stop.}"
+        "{cp             |       | JSON file with camera parameters }"
         "{shm            |       | Use shared memory to transmit data to other programs}";
 
 int main( int argc, char **argv ) {
@@ -102,12 +104,31 @@ int main( int argc, char **argv ) {
         markerID = parser.get<int>("id");
     }
 
+    std::string camParamFile;
+    if(parser.has("cp")){
+        camParamFile = parser.get<std::string>("cp");
+    }
+    cv::Point2f pixelResolution;
+    if (!readCameraParameters(camParamFile, pixelResolution))
+    {
+        std::cerr << "Read camera parameters error.\n";
+        return 7;
+    }
+    std::cout << "Camera parameters:\n\tpixel resolution x: " << pixelResolution.x 
+            << "\n\tpixel resolution y: " << pixelResolution.y << '\n';
+    // validate data
+    if((pixelResolution.x == 0) || (pixelResolution.y == 0)) {
+        std::cerr << "Get invalid camera parameters.\n";
+        return 8;
+    }
+    
+
     if(!parser.check()) {
         parser.printErrors();
         return 4;
     }
 
-	td::TransferData transfer;
+	td::TransferData transfer(pixelResolution);
 	ArucoLocalization cv_system(video_capture, dictionary_name);
 	std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
     std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();

@@ -39,13 +39,19 @@ void td::TransferData::Angle(cv::Point2f* arucoCorner) {
 
 void td::TransferData::DeltaEigen() {
 	cv::Point2f delta;
-	delta.x = (currGlobalCartesian.x - prevGlobalCartesian.x) * MMperPIX_X;
-	delta.y = (currGlobalCartesian.y - prevGlobalCartesian.y) * MMperPIX_Y;
-	deltaEigenCartesian.x = delta.x * sin(currAngle / 180.0f * PI) * (-1.0f) - delta.y * cos(currAngle / 180.0f * PI);
-	deltaEigenCartesian.y = delta.x * cos(currAngle / 180.0f * PI) * (-1.0f) + delta.y * sin(currAngle / 180.0f * PI);
+	delta.x = (currGlobalCartesian.x - prevGlobalCartesian.x) * pixelResolution.x;
+	delta.y = (currGlobalCartesian.y - prevGlobalCartesian.y) * pixelResolution.y;
+	float radAngle = deg2rad(currAngle);
+	deltaEigenCartesian.x = delta.x * std::sin(radAngle) * (-1.0f) - delta.y * std::cos(radAngle);
+	deltaEigenCartesian.y = delta.x * std::cos(radAngle) * (-1.0f) + delta.y * std::sin(radAngle);
 }
 
-ArucoLocalization::ArucoLocalization(const cv::VideoCapture& video_capture, cv::aruco::PREDEFINED_DICTIONARY_NAME dict_name) {
+float td::deg2rad(float deg) {
+	return (deg / 180.0f * PI);
+}
+
+ArucoLocalization::ArucoLocalization(const cv::VideoCapture& video_capture, 
+									 cv::aruco::PREDEFINED_DICTIONARY_NAME dict_name) {
 	for (int i = 0; i < 3; i++) {
 		arucoCorner[i].x = 0;
 		arucoCorner[i].y = 0;
@@ -87,7 +93,7 @@ bool ArucoLocalization::estimatePosition(td::TransferData* data, int markerID) {
 		}
 	}
 	// Calculating corners position of detecting Aruco marker
-	for (int i = 0; i < 3; i++) {
+	for (int i = 0; i < 4; i++) {
 		arucoCorner[i].x = markerCorners[markerIndex][i].x - 0.105f * (markerCorners[markerIndex][i].x - static_cast<float>(frame_width/2));
 		arucoCorner[i].y = markerCorners[markerIndex][i].y - 0.105f * (markerCorners[markerIndex][i].y - static_cast<float>(frame_height/2));
 	}
