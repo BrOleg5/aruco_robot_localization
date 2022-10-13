@@ -124,9 +124,10 @@ int main( int argc, char **argv ) {
             }
         }
         else if(status == 1){
-            cv_system.show_frame();
+            frame = cv_system.get_frame();
+            cv::imshow("Found aruco marker", frame);
             cv::waitKey();
-            std::cout << "Robot localization failed." << std::endl;
+            std::cout << "Cam frame" << std::endl;
             video_capture.release();
             return 5;
         }

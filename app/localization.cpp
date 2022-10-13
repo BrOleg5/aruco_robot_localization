@@ -32,7 +32,7 @@ int main( int argc, char **argv ) {
     // Shared memory flag
     bool shm_flag = parser.has("shm");
 
-    shm::Transmitter<double> transmitter;
+    shm::Transmitter<float> transmitter;
     if(shm_flag) {
         transmitter.create("CameraData", 1000);
         //Initialization shared memory vector
@@ -126,7 +126,7 @@ int main( int argc, char **argv ) {
                 cv_system.estimatePosition(&transfer);
             }
             if (shm_flag){
-                transmitter.data->at(0) = (double) time;
+                transmitter.data->at(0) = static_cast<float>(time);
                 transmitter.data->at(1) = transfer.currGlobalCartesian.x;
                 transmitter.data->at(2) = transfer.currGlobalCartesian.y;
                 transmitter.data->at(3) = transfer.currAngle;
@@ -135,13 +135,13 @@ int main( int argc, char **argv ) {
                 transmitter.data->at(6) = transfer.deltaAngle;
             }
             else {
-                std::cout << "|" << std::setw(15) << time;
-                std::cout << "|" << std::setw(15) << transfer.currGlobalCartesian.x;
-                std::cout << "|" << std::setw(15) << transfer.currGlobalCartesian.y;
-                std::cout << "|" << std::setw(15) << transfer.currAngle;
-                std::cout << "|" << std::setw(15) << transfer.deltaEigenCartesian.x;
-                std::cout << "|" << std::setw(15) << transfer.deltaEigenCartesian.y;
-                std::cout << "|" << std::setw(15) << transfer.deltaAngle << "|\n";
+                std::cout << " | " << std::setw(15) << time;
+                std::cout << " | " << std::setw(15) << transfer.currGlobalCartesian.x;
+                std::cout << " | " << std::setw(15) << transfer.currGlobalCartesian.y;
+                std::cout << " | " << std::setw(15) << transfer.currAngle;
+                std::cout << " | " << std::setw(15) << transfer.deltaEigenCartesian.x;
+                std::cout << " | " << std::setw(15) << transfer.deltaEigenCartesian.y;
+                std::cout << " | " << std::setw(15) << transfer.deltaAngle << " |\n";
             }
         }
         else if(status == 1) {

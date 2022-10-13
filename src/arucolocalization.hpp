@@ -2,17 +2,18 @@
 #define ARUCOLOCALIZATION_LIB
 
 #ifndef PI
-#	define PI 3.14159265358979323846
+#	define PI 3.14159265358979323846f
 #endif
 
-#define MMperPIX_X 2.1659
-#define MMperPIX_Y 2.1131
+#define MMperPIX_X 2.1659f
+#define MMperPIX_Y 2.1131f
 
 #include <iostream>
 #include "opencv2/aruco.hpp"
 #include "opencv2/highgui.hpp"
 #include "opencv2/imgproc.hpp"
 #include <algorithm>
+#include <cmath>
 
 namespace td {
 
@@ -26,38 +27,38 @@ namespace td {
 		/**
 		 * Current robot's global coordinate.
 		 */
-		cv::Point2d currGlobalCartesian;
+		cv::Point2f currGlobalCartesian;
 
 		/**
 		 * Previous robot's global coordinate.
 		 */
-		cv::Point2d prevGlobalCartesian;
+		cv::Point2f prevGlobalCartesian;
 
 		/**
 		 * Current robot's rotation angle.
 		 */
-		double currAngle;
+		float currAngle;
 
 		/**
 		 * Previous robot's rotation angle.
 		 */
-		double prevAngle;
+		float prevAngle;
 
 		/**
 		 * Robot's local coordinate change.
 		 */
-		cv::Point2d deltaEigenCartesian;
+		cv::Point2f deltaEigenCartesian;
 
 		/**
 		 * Robot's angle change.
 		 */
-		double deltaAngle;
+		float deltaAngle;
 
 		/**
 		 * Initializtion each coordinate as zero.
 		 */
-		TransferData() : currGlobalCartesian(0, 0), prevGlobalCartesian(0, 0), currAngle(0),
-						 prevAngle(0), deltaAngle(0), deltaEigenCartesian(0, 0) {}
+		TransferData() : currGlobalCartesian(0.0f, 0.0f), prevGlobalCartesian(0.0f, 0.0f), currAngle(0.0f),
+						 prevAngle(0.0f), deltaAngle(0.0f), deltaEigenCartesian(0.0f, 0.0f) {}
 		
 		~TransferData() {}
 
@@ -66,7 +67,7 @@ namespace td {
 		 * 
 		 * @param arucoCorner array of aruco corners.
 		 */
-		void Angle(cv::Point2d* arucoCorner);
+		void Angle(cv::Point2f* arucoCorner);
 
 		/**
 		 * Obtain robot's local coordinate change.
@@ -83,7 +84,13 @@ class ArucoLocalization {
 	/**
 	 * Three first corners of aruco marker cartesian clockwise.
 	 */
-	cv::Point2d arucoCorner[3];
+	cv::Point2f arucoCorner[4];
+
+	/**
+	 * Frame size
+	*/
+	int frame_height;
+	int frame_width;
 
 	/**
 	 * Frame for VideoCapture.
@@ -130,19 +137,12 @@ class ArucoLocalization {
 	int detectMarkers();
 
 	/**
-	 * Calculate first detected marker positions on the plane.
-	 * 
-	 * @param data storage marker's global coordinates and local coordinate change.
-	 */
-	bool estimatePosition(td::TransferData* data);
-
-	/**
 	 * Calculate marker positions on the plane.
 	 * 
 	 * @param data storage marker's global coordinates and local coordinate change.
 	 * @param markerID ID of marker that position calculating
 	 */
-	bool estimatePosition(td::TransferData* data, int markerID);
+	bool estimatePosition(td::TransferData* data, int markerID = -1);
 
 	/**
 	 * Open window with frame and drew aruco markers.
