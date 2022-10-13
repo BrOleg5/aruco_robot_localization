@@ -133,3 +133,11 @@ void ArucoLocalization::show_frame() {
 cv::Mat ArucoLocalization::get_frame() {
 	return currentVideoFrame;
 }
+
+void ArucoLocalization::getMarkersCorners(std::vector<std::vector<cv::Point2f>>& marker_corners) {
+	marker_corners = markerCorners;
+}
+
+void ArucoLocalization::getMarkersIndexes(std::vector<int>& marker_ids) {
+	marker_ids = markerIds;
+}

@@ -82,7 +82,7 @@ namespace td {
  */
 class ArucoLocalization {
 	/**
-	 * Three first corners of aruco marker cartesian clockwise.
+	 * Corners of aruco marker cartesian clockwise.
 	 */
 	cv::Point2f arucoCorner[4];
 
@@ -159,5 +159,8 @@ class ArucoLocalization {
 	 * Open window with frame.
 	 */
 	void show_frame();
+
+	void getMarkersCorners(std::vector<std::vector<cv::Point2f>>& marker_corners);
+	void getMarkersIndexes(std::vector<int>& marker_ids);
 };
 #endif

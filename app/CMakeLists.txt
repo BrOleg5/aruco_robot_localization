@@ -46,3 +46,5 @@ target_include_directories(detect_aruco_marker PUBLIC
 install(TARGETS detect_aruco_marker
         EXPORT ArucoLocalizationTargets
         RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin)
+
+add_subdirectory("camera calibration")
