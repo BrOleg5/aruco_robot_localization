@@ -1,30 +1,39 @@
 #include "arucolocalization.hpp"
 
 void td::TransferData::Angle(cv::Point2f* arucoCorner) {
-	if (arucoCorner[1].x >= arucoCorner[2].x) {
-		if (arucoCorner[1].y >= arucoCorner[2].y) {
-			// if in [0 ; 90] degrees, then               
-			currAngle = 270.0f - std::acos(abs(arucoCorner[1].x - arucoCorner[2].x) / sqrt(pow(arucoCorner[1].x - arucoCorner[2].x, 2) + pow(arucoCorner[1].y - arucoCorner[2].y, 2))) * 180.0f / PI;
-		}
-		else {
-			// if in [270 ; 360] degrees, then            
-			currAngle = -90.0f + acos(abs(arucoCorner[1].x - arucoCorner[2].x) / sqrt(pow(arucoCorner[1].x - arucoCorner[2].x, 2) + pow(arucoCorner[1].y - arucoCorner[2].y, 2))) * 180.0f / PI;
-		}
+	float angle[4] = { 0.0f };
+	angle[0] = calcAngleParallelSide(arucoCorner[1], arucoCorner[2]);
+	angle[1] = calcAngleParallelSide(arucoCorner[0], arucoCorner[3]);
+	angle[2] = calcAnglePerpendicularSide(arucoCorner[0], arucoCorner[1]);
+	angle[3] = calcAnglePerpendicularSide(arucoCorner[3], arucoCorner[2]);
+	currAngle = 0;
+	for (int i = 0; i < 4; i++)	{
+		currAngle += angle[i];
 	}
-	else {
-		if (arucoCorner[1].y >= arucoCorner[2].y) {
-			// if in [90 ; 180] degrees, then             
-			currAngle = 90.0f + acos(abs(arucoCorner[1].x - arucoCorner[2].x) / sqrt(pow(arucoCorner[1].x - arucoCorner[2].x, 2) + pow(arucoCorner[1].y - arucoCorner[2].y, 2))) * 180.0f / PI;
-		}
-		else {
-			// if in [180 ; 270] degrees, then            
-			currAngle = 90.0f - acos(abs(arucoCorner[1].x - arucoCorner[2].x) / sqrt(pow(arucoCorner[1].x - arucoCorner[2].x, 2) + pow(arucoCorner[1].y - arucoCorner[2].y, 2))) * 180.0f / PI;
-		}
+	currAngle /= 4.0f;
+}
+
+float td::calcAngleParallelSide(cv::Point2f& p1, cv::Point2f& p2) {
+	float angle = std::atan2f(p2.x - p1.x, p2.y - p1.y);
+	angle = remapAngle(angle);
+	return rad2deg(angle);
+}
+
+float td::calcAnglePerpendicularSide(cv::Point2f& p1, cv::Point2f& p2) {
+	float angle = std::atan2f(p1.y - p2.y, p2.x - p1.x);
+	angle = remapAngle(angle);
+	return rad2deg(angle);
+}
+
+float td::remapAngle(float angle) {
+	if(angle < 0) {
+		angle += 2*PI;
 	}
-	if (currAngle < 0) {
-		currAngle = 360.0f + currAngle;
-	}
-	if (abs(currAngle - prevAngle) > 160) {
+	return angle;
+}
+
+void td::TransferData::DeltaAngle() {
+	if(std::abs(currAngle -prevAngle) > 160) {
 		if (currAngle > prevAngle) {
 			deltaAngle = -1.0f * (360.0f - currAngle + prevAngle);
 		}
@@ -48,6 +57,10 @@ void td::TransferData::DeltaEigen() {
 
 float td::deg2rad(float deg) {
 	return (deg / 180.0f * PI);
+}
+
+float td::rad2deg(float rad) {
+	return (rad / PI * 180.0f);
 }
 
 ArucoLocalization::ArucoLocalization(const cv::VideoCapture& video_capture, 
@@ -80,22 +93,31 @@ int ArucoLocalization::detectMarkers() {
 	}
 }
 
+int ArucoLocalization::filterMarkers(int markerID) {
+	std::vector<int>::iterator markerIterator = std::find(markerIds.begin(), markerIds.end(), markerID);
+	if(markerIterator != markerIds.end()) {
+		return static_cast<int>(markerIterator - markerIds.begin());
+	}
+	else {
+		std::cerr << "Marker with ID=" << markerID << " not searched.\n";
+		return -1;
+	}
+}
+
 bool ArucoLocalization::estimatePosition(td::TransferData* data, int markerID) {
 	int markerIndex = 0;
 	if(markerID >= 0) {
-		std::vector<int>::iterator markerIterator = std::find(markerIds.begin(), markerIds.end(), markerID);
-		if(markerIterator != markerIds.end()) {
-			markerIndex = static_cast<int>(markerIterator - markerIds.begin());
-		}
-		else {
-			std::cerr << "Marker with ID=" << markerID << " not searched.\n";
+		markerIndex = filterMarkers(markerID);
+		if(markerIndex < 0) {
 			return false;
 		}
 	}
+	std::vector<cv::Point2f> currMarkerCorners = markerCorners[markerIndex];
+
 	// Calculating corners position of detecting Aruco marker
 	for (int i = 0; i < 4; i++) {
-		arucoCorner[i].x = markerCorners[markerIndex][i].x - 0.105f * (markerCorners[markerIndex][i].x - static_cast<float>(frame_width/2));
-		arucoCorner[i].y = markerCorners[markerIndex][i].y - 0.105f * (markerCorners[markerIndex][i].y - static_cast<float>(frame_height/2));
+		arucoCorner[i].x = currMarkerCorners[i].x - 0.105f * (currMarkerCorners[i].x - static_cast<float>(frame_width/2));
+		arucoCorner[i].y = currMarkerCorners[i].y - 0.105f * (currMarkerCorners[i].y - static_cast<float>(frame_height/2));
 	}
 	//Calculating current cartesian position in pixels
 	data->prevGlobalCartesian.x = data->currGlobalCartesian.x;
@@ -105,6 +127,7 @@ bool ArucoLocalization::estimatePosition(td::TransferData* data, int markerID) {
 	//Finding the angle of the aruco vector
 	data->prevAngle = data->currAngle;
 	data->Angle(arucoCorner);
+	data->DeltaAngle();
 	data->DeltaEigen();
 	return true;
 }
@@ -119,15 +142,19 @@ void ArucoLocalization::show_markers() {
 cv::Mat ArucoLocalization::draw_marker(int markerID) {
 	cv::Mat outputImage;
 	currentVideoFrame.copyTo(outputImage);
-	std::vector<int>::iterator markerIterator = std::find(markerIds.begin(), markerIds.end(), markerID);
-	if(markerIterator != markerIds.end()) {
-		int markerIndex = static_cast<int>(markerIterator - markerIds.begin());
-		std::vector<std::vector<cv::Point2f>> oneMarkerCorner = {markerCorners[markerIndex]};
-		std::vector<int> oneMarkerIds = {markerIds[markerIndex]};
-		cv::aruco::drawDetectedMarkers(outputImage, oneMarkerCorner, oneMarkerIds);
+	if(markerID >= 0) {
+		int markerIndex = filterMarkers(markerID);
+		if(markerIndex >= 0) {
+			std::vector<std::vector<cv::Point2f>> oneMarkerCorner = {markerCorners[markerIndex]};
+			std::vector<int> oneMarkerIds = {markerIds[markerIndex]};
+			cv::aruco::drawDetectedMarkers(outputImage, oneMarkerCorner, oneMarkerIds);
+		}
+		else {
+			std::cerr << "Marker with ID = " << markerID << " not searched.\n";
+		}
 	}
 	else {
-		std::cerr << "Marker with ID=" << markerID << " not searched.\n";
+		std::cerr << "Invalid marker ID = " << markerID << '\n';
 	}
 	return outputImage;
 }

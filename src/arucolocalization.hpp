@@ -69,12 +69,33 @@ namespace td {
 		void Angle(cv::Point2f* arucoCorner);
 
 		/**
+		 * Obtain robot's angle change.
+		 */
+		void DeltaAngle();
+
+		/**
 		 * Obtain robot's local coordinate change.
 		 */
 		void DeltaEigen();
 	};
 
+	/**
+	 * Calculate angle with parallel side
+	*/
+	float calcAngleParallelSide(cv::Point2f& p1, cv::Point2f& p2);
+
+	/**
+	 * Calculate angle with perpendicular side
+	*/
+	float calcAnglePerpendicularSide(cv::Point2f& p1, cv::Point2f& p2);
+
+	/**
+	 * Map angle from [-pi; pi] to [0; 2pi]
+	*/
+	float remapAngle(float angle);
+
 	float deg2rad(float deg);
+	float rad2deg(float rad);
 }
 
 /**
@@ -140,6 +161,8 @@ class ArucoLocalization {
 	 */
 	int detectMarkers();
 
+	int filterMarkers(int markerID);
+
 	/**
 	 * Calculate marker positions on the plane.
 	 * 
@@ -167,4 +190,5 @@ class ArucoLocalization {
 	void getMarkersCorners(std::vector<std::vector<cv::Point2f>>& marker_corners);
 	void getMarkersIndexes(std::vector<int>& marker_ids);
 };
+
 #endif
