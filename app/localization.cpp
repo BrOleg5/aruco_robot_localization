@@ -40,8 +40,8 @@ int main( int argc, char **argv ) {
         //Initialization shared memory vector
         for (size_t i = 0; i < 7; i++)
         {
-            transmitter.data->push_back(0);
-        }    
+            transmitter.data->push_back(0.0f);
+        }
     }
 
     cv::aruco::PREDEFINED_DICTIONARY_NAME dictionary_name;

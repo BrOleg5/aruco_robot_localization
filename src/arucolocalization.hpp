@@ -90,9 +90,14 @@ namespace td {
 	float calcAnglePerpendicularSide(cv::Point2f& p1, cv::Point2f& p2);
 
 	/**
-	 * Map angle from [-pi; pi] to [0; 2pi]
+	 * Normalize an angle to range [0; 2pi) or [0; 360)
 	*/
-	float remapAngle(float angle);
+	float normAngle2PI(float angle, bool isRadian = true);
+
+	/**
+	 * Normalize an angle to range [-pi; pi) or [-180; 180)
+	*/
+	float normAnglePI(float angle, bool isRadian = true);
 
 	float deg2rad(float deg);
 	float rad2deg(float rad);

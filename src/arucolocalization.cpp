@@ -6,28 +6,63 @@ void td::TransferData::Angle(cv::Point2f* arucoCorner) {
 	angle[1] = calcAngleParallelSide(arucoCorner[0], arucoCorner[3]);
 	angle[2] = calcAnglePerpendicularSide(arucoCorner[0], arucoCorner[1]);
 	angle[3] = calcAnglePerpendicularSide(arucoCorner[3], arucoCorner[2]);
+	bool isCloseZero = true;
+	for (int i = 0; i < 4; i++)	{
+		if((angle[i] > 20) && (angle[i] < 340)) {
+			isCloseZero = false;
+		}
+	}
+	if(isCloseZero) {
+		for (int i = 0; i < 4; i++) {
+			angle[i] = normAnglePI(angle[i], false);
+		}
+	}
 	currAngle = 0;
 	for (int i = 0; i < 4; i++)	{
 		currAngle += angle[i];
+		std::cout << "    angle" << i << ": " << angle[i];
 	}
+	std::cout << '\n';
 	currAngle /= 4.0f;
+	if(isCloseZero) {
+		currAngle = normAngle2PI(currAngle, false);
+	}
 }
 
 float td::calcAngleParallelSide(cv::Point2f& p1, cv::Point2f& p2) {
 	float angle = std::atan2f(p2.x - p1.x, p2.y - p1.y);
-	angle = remapAngle(angle);
+	angle = normAngle2PI(angle);
 	return rad2deg(angle);
 }
 
 float td::calcAnglePerpendicularSide(cv::Point2f& p1, cv::Point2f& p2) {
 	float angle = std::atan2f(p1.y - p2.y, p2.x - p1.x);
-	angle = remapAngle(angle);
+	angle = normAngle2PI(angle);
 	return rad2deg(angle);
 }
 
-float td::remapAngle(float angle) {
-	if(angle < 0) {
-		angle += 2*PI;
+float td::normAngle2PI(float angle, bool isRadian) {
+	if(angle < 0.0f) {
+		if(isRadian){
+			angle += 2*PI;
+		}
+		else {
+			angle += 360;
+		}
+	}
+	return angle;
+}
+
+float td::normAnglePI(float angle, bool isRadian) {
+	if(isRadian) {
+		if(angle > PI) {
+			angle -= 2*PI;
+		}
+	}
+	else {
+		if(angle > 180.0f) {
+			angle -= 360;
+		}
 	}
 	return angle;
 }
