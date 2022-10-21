@@ -1,0 +1,27 @@
+{
+    "test_frame_0.jpg":{
+                        "x": 960,
+                        "y": 540, 
+                        "ang": 0.5
+                        },
+    "test_frame_1.jpg":{
+                        "x": 622,
+                        "y": 300, 
+                        "ang": 36
+                        },
+    "test_frame_2.jpg":{
+                        "x": 713,
+                        "y": 778,
+                        "ang": 155
+                        },
+    "test_frame_3.jpg":{
+                        "x": 1077,
+                        "y": 709,
+                        "ang": 213
+                        },
+    "test_frame_4.jpg":{
+                        "x": 1170,
+                        "y": 254,
+                        "ang": 320
+                        }
+}

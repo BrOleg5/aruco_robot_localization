@@ -32,11 +32,18 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}")
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 option(BUILD_APP "Build application to localize Aruco marker." OFF)
+option(BUILD_TEST "Build test programs." OFF)
 
 add_subdirectory(src)
 
 if(BUILD_APP)
-        add_subdirectory(app)        
+  add_subdirectory(app)        
+endif()
+
+if(BUILD_TEST)
+  include(CTest)
+  enable_testing()
+  add_subdirectory(test)
 endif()
 
 # Add all targets to the build-tree export set
