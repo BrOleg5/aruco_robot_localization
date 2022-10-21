@@ -5,6 +5,15 @@
 #include <iomanip>
 #include "read_save_camera_parameters.hpp"
 
+//link: https://learn.microsoft.com/en-us/windows/console/registering-a-control-handler-function?source=recommendations
+#ifdef WIN32
+#   include <windows.h>
+#   include <stdio.h>
+
+BOOL isExit = false;
+BOOL WINAPI CtrlHandler(DWORD fdwCtrlType);
+#endif
+
 const std::string about = "Localization of Aruco marker.";
 const std::string keys  =
         "{h help ? usage |       | Print help message}"
@@ -50,7 +59,7 @@ int main( int argc, char **argv ) {
         dictionary_name = cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionary_id);
     }
     else {
-        std::cerr << "Dictionary not specified" << std::endl;
+        std::cout << "Dictionary not specified" << std::endl;
         return 1;
     }
 
@@ -77,7 +86,7 @@ int main( int argc, char **argv ) {
             std::cout << "Camera connected." << std::endl;
         }
         else {
-            std::cerr << "Camera not connected." << std::endl;
+            std::cout << "Camera not connected." << std::endl;
             return 2;
         }
     }
@@ -89,12 +98,12 @@ int main( int argc, char **argv ) {
             std::cout << "Video file opened." << std::endl;
         }
         else {
-            std::cerr << "Video file not opened." << std::endl;
+            std::cout << "Video file not opened." << std::endl;
             return 2;
         }
     }
     else {
-        std::cerr << "Camera of video file not specified" << std::endl;
+        std::cout << "Camera of video file not specified" << std::endl;
         return 3;
     }
 
@@ -111,14 +120,14 @@ int main( int argc, char **argv ) {
     cv::Point2f pixelResolution;
     if (!readCameraParameters(camParamFile, pixelResolution))
     {
-        std::cerr << "Read camera parameters error.\n";
+        std::cout << "Read camera parameters error.\n";
         return 7;
     }
     std::cout << "Camera parameters:\n\tpixel resolution x: " << pixelResolution.x 
             << "\n\tpixel resolution y: " << pixelResolution.y << '\n';
     // validate data
     if((pixelResolution.x == 0) || (pixelResolution.y == 0)) {
-        std::cerr << "Get invalid camera parameters.\n";
+        std::cout << "Get invalid camera parameters.\n";
         return 8;
     }
     
@@ -127,6 +136,13 @@ int main( int argc, char **argv ) {
         parser.printErrors();
         return 4;
     }
+
+    #ifdef WIN32
+    if(!SetConsoleCtrlHandler(CtrlHandler, TRUE)) {
+        std::cout << "Could not set control handler\n";
+        return 7;
+    }
+    #endif
 
 	td::TransferData transfer(pixelResolution);
 	ArucoLocalization cv_system(video_capture, dictionary_name);
@@ -176,7 +192,27 @@ int main( int argc, char **argv ) {
             break;
         }
         prev_time = time;
+        #ifdef WIN32
+        if(isExit) {
+            break;
+        }
+        #endif
     }
     video_capture.release();
 	return 0;
 }
+
+#ifdef WIN32
+BOOL WINAPI CtrlHandler(DWORD fdwCtrlType) {
+    switch (fdwCtrlType) {
+    case CTRL_C_EVENT:
+    case CTRL_CLOSE_EVENT:
+    case CTRL_LOGOFF_EVENT:
+    case CTRL_SHUTDOWN_EVENT:
+        isExit = TRUE;
+        return TRUE;
+    default:
+        return FALSE;
+    }
+}
+#endif
