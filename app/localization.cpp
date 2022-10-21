@@ -6,10 +6,9 @@
 #include "read_save_camera_parameters.hpp"
 
 //link: https://learn.microsoft.com/en-us/windows/console/registering-a-control-handler-function?source=recommendations
-#ifdef WIN32
+#if  defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
 #   include <windows.h>
 #   include <stdio.h>
-
 BOOL isExit = false;
 BOOL WINAPI CtrlHandler(DWORD fdwCtrlType);
 #endif
@@ -137,7 +136,7 @@ int main( int argc, char **argv ) {
         return 4;
     }
 
-    #ifdef WIN32
+    #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
     if(!SetConsoleCtrlHandler(CtrlHandler, TRUE)) {
         std::cout << "Could not set control handler\n";
         return 7;
@@ -192,7 +191,7 @@ int main( int argc, char **argv ) {
             break;
         }
         prev_time = time;
-        #ifdef WIN32
+        #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
         if(isExit) {
             break;
         }
@@ -202,7 +201,7 @@ int main( int argc, char **argv ) {
 	return 0;
 }
 
-#ifdef WIN32
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
 BOOL WINAPI CtrlHandler(DWORD fdwCtrlType) {
     switch (fdwCtrlType) {
     case CTRL_C_EVENT:
