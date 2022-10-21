@@ -20,9 +20,7 @@ void td::TransferData::Angle(cv::Point2f* arucoCorner) {
 	currAngle = 0;
 	for (int i = 0; i < 4; i++)	{
 		currAngle += angle[i];
-		std::cout << "    angle" << i << ": " << angle[i];
 	}
-	std::cout << '\n';
 	currAngle /= 4.0f;
 	if(isCloseZero) {
 		currAngle = normAngle2PI(currAngle, false);
