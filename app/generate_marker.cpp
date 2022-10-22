@@ -1,42 +1,81 @@
 #include "opencv2/aruco.hpp"
 #include "opencv2/highgui.hpp"
-#include "opencv2/imgproc.hpp"
 #include <iostream>
-#include <iomanip>
-#include "cmdoptionparser.hpp"
+#include <opencv2/core/utility.hpp>
+
+enum ErrorCode : int {
+    OK,
+    COMMAND_LINE_PARSER_ERROR,
+    NOT_ENOUGH_ARGUMENTS
+};
+
+const std::string about = "Aruco marker generator.";
+const std::string keys  =
+        "{h help ? usage |        | Print help message}"
+        "{@outfile       | <none> | Output image }"
+        "{d              |        | dictionary: DICT_4X4_50=0, DICT_4X4_100=1, DICT_4X4_250=2,"
+        "DICT_4X4_1000=3, DICT_5X5_50=4, DICT_5X5_100=5, DICT_5X5_250=6, DICT_5X5_1000=7, "
+        "DICT_6X6_50=8, DICT_6X6_100=9, DICT_6X6_250=10, DICT_6X6_1000=11, DICT_7X7_50=12,"
+        "DICT_7X7_100=13, DICT_7X7_250=14, DICT_7X7_1000=15, DICT_ARUCO_ORIGINAL = 16}"
+        "{id             |        | Marker id in the dictionary }"
+        "{ms             |        | Marker size in pixels }"
+        "{bb             | 1      | Number of bits in marker borders }"
+        "{si             |        | show generated image }";
 
 int main( int argc, char **argv ) {
-    int marker_id = 0;
-    int img_size = 100;
-    int border_size = 1;
-    // Process command line options.
-    if (argc > 1){
-        // Help option
-        if (cmdOptionExists(argv, argv+argc, "--help")) {
-            std::cout << "usage: generate_marker [options]\n\nOptions:\n\n"
-                      << std::left << "  " << std::setw(15) << "--help" << "Display this information.\n"
-                      << "  " << std::setw(15) << "-id <marker_id>" << "Marker id from DICT_4X4_50.\n"
-                      << "  " << std::setw(15) << "-size <pix>" << "Size of the image in pixels.\n"
-                      << "  " << std::setw(15) << "-border-bits <bord_bits>" << "Width of the marker border.\n\n";
-            return 0;
-        }
-        // Set marker id
-        if (cmdOptionExists(argv, argv+argc, "-id")){
-            marker_id = atoi(getCmdOption(argv, argv+argc, "-id"));
-        }
-        // Set test duration option
-        if (cmdOptionExists(argv, argv+argc, "-size")){
-            img_size = atoi(getCmdOption(argv, argv+argc, "-size"));
-        }
-        // 
-        if (cmdOptionExists(argv, argv+argc, "-border-bits")){
-            border_size = atoi(getCmdOption(argv, argv+argc, "-border-bits"));
-        }
+    cv::CommandLineParser parser(argc, argv, keys);
+    parser.about(about);
+
+    if(parser.has("h") || parser.has("help") || parser.has("?") || parser.has("usage")) {
+        parser.printMessage();
+        return ErrorCode::OK;
     }
 
+    if(!parser.check()) {
+        parser.printErrors();
+        return ErrorCode::COMMAND_LINE_PARSER_ERROR;
+    }
+
+    cv::Ptr<cv::aruco::Dictionary> dictionary;
+    if (parser.has("d")) {
+        int dictionaryId = parser.get<int>("d");
+        dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
+    }
+    else {
+        std::cout << "Dictionary not specified.\n";
+        return ErrorCode::NOT_ENOUGH_ARGUMENTS;
+    }
+
+    int marker_id = 0;
+    if (parser.has("id")) {
+        marker_id = parser.get<int>("id");
+    }
+    else {
+        std::cout << "Marker ID not specified.\n";
+        return ErrorCode::NOT_ENOUGH_ARGUMENTS;
+    }
+
+    int img_size = 0;
+    if (parser.has("ms")) {
+        img_size = parser.get<int>("ms");
+    }
+    else {
+        std::cout << "Marker size not specified.\n";
+        return ErrorCode::NOT_ENOUGH_ARGUMENTS;
+    }
+
+    int border_size = parser.get<int>("bb");
+
+    std::string out = parser.get<std::string>(0);
+
     cv::Mat markerImage;
-    cv::Ptr<cv::aruco::Dictionary> dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::DICT_4X4_50);
     cv::aruco::drawMarker(dictionary, marker_id, img_size, markerImage, border_size);
-    cv::imwrite("marker.png", markerImage);
+
+    if(parser.has("si")) {
+        cv::imshow("marker", markerImage);
+        cv::waitKey(0);
+    }
+
+    cv::imwrite(out, markerImage);
     return 0;
 }
