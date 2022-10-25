@@ -4,7 +4,7 @@ find_package(OpenCV 4.2.0 REQUIRED)
 
 set_target_properties(arucolocalization PROPERTIES
                       VERSION ${PROJECT_VERSION}
-                      PUBLIC_HEADER arucolocalization.hpp
+                      PUBLIC_HEADER "arucolocalization.hpp;${PROJECT_SOURCE_DIR}/include/read_save_camera_parameters.hpp"
                       DEBUG_POSTFIX d)
 
 target_link_libraries(arucolocalization ${OpenCV_LIBS})

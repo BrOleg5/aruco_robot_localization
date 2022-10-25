@@ -10,7 +10,7 @@ set(ArucoLocalization_INCLUDE_DIRS "@CONF_INCLUDE_DIRS@")
 
 # Our library dependencies (contains definitions for IMPORTED targets)
 if(NOT TARGET arucolocalization AND NOT ArucoLocalization_BINARY_DIR)
-    include("${ARUCOLOCALIZATION_CMAKE_DIR}/cmake/ArucoLocalizationTargets.cmake")
+    include("${ARUCOLOCALIZATION_CMAKE_DIR}/ArucoLocalizationTargets.cmake")
 endif()
 
 # These are IMPORTED targets created by ArucoLocalizationTargets.cmake
