@@ -13,8 +13,9 @@ const std::string keys  =
         "DICT_APRILTAG_16h5=17, DICT_APRILTAG_25h9=18, DICT_APRILTAG_36h10=19, DICT_APRILTAG_36h11=20}"
         "{id             |       | Marker id, if ommited, detect all markers from dictionaty }"
         "{ci             |       | Camera id, if ommited, input comes from video file }"
-        "{iv              |       | Input from video file if input doesnt come from camera (--ci) }"
-        "{ov              |       | Input from video file if input doesnt come from camera (--ci) }";
+        "{iv             |       | Input from video file if input doesnt come from camera (--ci) }"
+        "{ov             |       | Input from video file if input doesnt come from camera (--ci) }"
+        "{ce             | 0     | Camera exposure }";
 
 int main( int argc, char **argv ) {
     cv::CommandLineParser parser(argc, argv, keys);
@@ -52,6 +53,13 @@ int main( int argc, char **argv ) {
         #ifdef WIN32
             video_capture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
         #endif
+        if(parser.has("ce")) {
+            video_capture.set(cv::CAP_PROP_AUTO_EXPOSURE, 0);
+            video_capture.set(cv::CAP_PROP_EXPOSURE, parser.get<double>("ce"));
+        }
+        else {
+            video_capture.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
+        }
 
         //Checking for the camera to be connected 
         if (video_capture.isOpened()) {
