@@ -63,7 +63,7 @@ configure_file(cmake/ArucoLocalizationConfig.cmake.in
 # ... for the install tree
 set(CONF_INCLUDE_DIRS "\${ARUCOLOCALIZATION_CMAKE_DIR}/${CMAKE_INSTALL_INCLUDEDIR}")
 configure_file(cmake/ArucoLocalizationConfig.cmake.in
-               "${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/cmake/ArucoLocalizationConfig.cmake" @ONLY)
+               "${PROJECT_BINARY_DIR}/cmake/ArucoLocalizationConfig.cmake" @ONLY)
 
 # ... for both
 configure_file(cmake/ArucoLocalizationConfigVersion.cmake.in
