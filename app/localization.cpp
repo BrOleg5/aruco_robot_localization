@@ -15,18 +15,20 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType);
 
 const std::string about = "Localization of Aruco marker.";
 const std::string keys  =
-        "{h help ? usage |       | Print help message}"
-        "{d              |       | dictionary: DICT_4X4_50=0, DICT_4X4_100=1, DICT_4X4_250=2,"
+        "{h help ? usage |        | Print help message}"
+        "{d              |        | dictionary: DICT_4X4_50=0, DICT_4X4_100=1, DICT_4X4_250=2,"
         "DICT_4X4_1000=3, DICT_5X5_50=4, DICT_5X5_100=5, DICT_5X5_250=6, DICT_5X5_1000=7, "
         "DICT_6X6_50=8, DICT_6X6_100=9, DICT_6X6_250=10, DICT_6X6_1000=11, DICT_7X7_50=12,"
         "DICT_7X7_100=13, DICT_7X7_250=14, DICT_7X7_1000=15, DICT_ARUCO_ORIGINAL = 16,"
         "DICT_APRILTAG_16h5=17, DICT_APRILTAG_25h9=18, DICT_APRILTAG_36h10=19, DICT_APRILTAG_36h11=20}"
-        "{id             |       | Marker id, if ommited, detect all markers from dictionaty }"
-        "{ci             |       | Camera id, if ommited, input comes from video file }"
-        "{v              |       | Input from video file if input doesnt come from camera (--ci) }"
-        "{t              | 0     | Program execution time in ms. If it equals 0, application run until user stop.}"
-        "{cp             |       | JSON file with camera parameters }"
-        "{shm            |       | Use shared memory to transmit data to other programs}";
+        "{id             |        | Marker id, if ommited, detect all markers from dictionaty }"
+        "{ci             |        | Camera id, if ommited, input comes from video file }"
+        "{v              |        | Input from video file if input doesnt come from camera (--ci) }"
+        "{t              | 0      | Program execution time in ms. If it equals 0, application run until user stop.}"
+        "{cp             |        | JSON file with camera parameters }"
+        "{shm            |        | Use shared memory to transmit data to other programs}"
+        "{ov             | <none> | Output video }"
+        "{ce             | 0      | Camera exposure }";
 
 int main( int argc, char **argv ) {
     cv::CommandLineParser parser(argc, argv, keys);
@@ -46,8 +48,7 @@ int main( int argc, char **argv ) {
     if(shm_flag) {
         transmitter.create("CameraData", 1000);
         //Initialization shared memory vector
-        for (size_t i = 0; i < 7; i++)
-        {
+        for (size_t i = 0; i < 7; i++) {
             transmitter.data->push_back(0.0f);
         }
     }
@@ -73,9 +74,15 @@ int main( int argc, char **argv ) {
         video_capture.set(cv::CAP_PROP_FRAME_WIDTH, 1920);
         video_capture.set(cv::CAP_PROP_FRAME_HEIGHT, 1080);
         video_capture.set(cv::CAP_PROP_FOCUS, 0); // min: 0, max: 255, increment:5
-        video_capture.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
         video_capture.set(cv::CAP_PROP_BUFFERSIZE, 1);
         // link: https://stackoverflow.com/a/70074022
+        if(parser.has("ce")) {
+            video_capture.set(cv::CAP_PROP_AUTO_EXPOSURE, 0);
+            video_capture.set(cv::CAP_PROP_EXPOSURE, parser.get<double>("ce"));
+        }
+        else {
+            video_capture.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
+        }
         #ifdef WIN32
             video_capture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
         #endif
@@ -89,7 +96,7 @@ int main( int argc, char **argv ) {
             return 2;
         }
     }
-    else if(parser.has("v")){
+    else if(parser.has("v")) {
         std::string videoFile = parser.get<std::string>("v");
         video_capture.open(videoFile);
         //Checking for the video file to be opened 
@@ -117,8 +124,7 @@ int main( int argc, char **argv ) {
         camParamFile = parser.get<std::string>("cp");
     }
     cv::Point2f pixelResolution;
-    if (!readCameraParameters(camParamFile, pixelResolution))
-    {
+    if (!readCameraParameters(camParamFile, pixelResolution)) {
         std::cout << "Read camera parameters error.\n";
         return 7;
     }
@@ -130,6 +136,18 @@ int main( int argc, char **argv ) {
         return 8;
     }
     
+    bool writeVideo = parser.has("ov");
+    std::string outputFile;
+    cv::VideoWriter videoWriter;
+    if(writeVideo) {
+        outputFile = parser.get<std::string>("ov");
+        std::cout << "Write video file.\n";
+        bool status = videoWriter.open(outputFile, cv::VideoWriter::fourcc('M', 'P', '4', 'V'), 30, cv::Size(1920, 1080), true);
+        if(!status) {
+            std::cout << "Video writer not initialized.\n";
+            return 11;
+        }
+    }
 
     if(!parser.check()) {
         parser.printErrors();
@@ -154,7 +172,7 @@ int main( int argc, char **argv ) {
         time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
         int status = cv_system.detectMarkers();
         if (status == 0) {
-            if(has_marker_id){
+            if(has_marker_id) {
                 if(!cv_system.estimatePosition(&transfer, markerID)) {
                     return 5;
                 }
@@ -162,7 +180,7 @@ int main( int argc, char **argv ) {
             else {
                 cv_system.estimatePosition(&transfer);
             }
-            if (shm_flag){
+            if (shm_flag) {
                 transmitter.data->at(0) = static_cast<float>(time);
                 transmitter.data->at(1) = transfer.currGlobalCartesian.x;
                 transmitter.data->at(2) = transfer.currGlobalCartesian.y;
@@ -181,10 +199,16 @@ int main( int argc, char **argv ) {
                 std::cout << " | " << std::setw(15) << transfer.deltaEigenCartesian.y / dt;
                 std::cout << " | " << std::setw(15) << transfer.deltaAngle / dt << " |\n";
             }
+            if(writeVideo) {
+                videoWriter.write(cv_system.get_frame());
+            }
         }
         else if(status == 1) {
             std::cout << "Robot localization failed." << std::endl;
             video_capture.release();
+            if(writeVideo) {
+                videoWriter.release();
+            }
             return 6;
         }
         else if(status == 2) {
@@ -198,6 +222,9 @@ int main( int argc, char **argv ) {
         #endif
     }
     video_capture.release();
+    if(writeVideo) {
+        videoWriter.release();
+    }
 	return 0;
 }
 
