@@ -76,6 +76,9 @@ int main( int argc, char **argv ) {
         video_capture.set(cv::CAP_PROP_FOCUS, 0); // min: 0, max: 255, increment:5
         video_capture.set(cv::CAP_PROP_BUFFERSIZE, 1);
         // link: https://stackoverflow.com/a/70074022
+        #ifdef WIN32
+            video_capture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
+        #endif
         if(parser.has("ce")) {
             video_capture.set(cv::CAP_PROP_AUTO_EXPOSURE, 0);
             video_capture.set(cv::CAP_PROP_EXPOSURE, parser.get<double>("ce"));
@@ -83,9 +86,6 @@ int main( int argc, char **argv ) {
         else {
             video_capture.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
         }
-        #ifdef WIN32
-            video_capture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
-        #endif
 
         //Checking for the camera to be connected 
         if (video_capture.isOpened()) {
@@ -161,6 +161,7 @@ int main( int argc, char **argv ) {
     }
     #endif
 
+    cv::Mat frame;
 	td::TransferData transfer(pixelResolution);
 	ArucoLocalization cv_system(video_capture, dictionary_name);
 	std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
@@ -205,6 +206,9 @@ int main( int argc, char **argv ) {
         }
         else if(status == ArucoLocalization::Status::MARKER_NOT_DETECTED) {
             std::cout << "Robot localization failed." << std::endl;
+            frame = cv_system.get_frame();
+            cv::imshow("Found aruco marker", frame);
+            cv::waitKey();
             video_capture.release();
             if(writeVideo) {
                 videoWriter.release();
