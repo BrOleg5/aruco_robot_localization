@@ -129,10 +129,9 @@ int ArucoLocalization::detectMarkers() {
 int ArucoLocalization::filterMarkers(int markerID) {
 	std::vector<int>::iterator markerIterator = std::find(markerIds.begin(), markerIds.end(), markerID);
 	if(markerIterator != markerIds.end()) {
-		return static_cast<int>(markerIterator - markerIds.begin());
+		return *markerIterator;
 	}
 	else {
-		std::cerr << "Marker with ID=" << markerID << " not searched.\n";
 		return -1;
 	}
 }
