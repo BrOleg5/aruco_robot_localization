@@ -116,7 +116,7 @@ int main( int argc, char **argv ) {
         current_time = std::chrono::steady_clock::now();
         time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
         std::cout << "Time process one frame: " << time << " ms\n";
-        if(status == 0) {
+        if(status == ArucoLocalization::Status::OK) {
             if(has_marker_id) {
                 frame = cv_system.draw_marker(markerID);
                 if(write_video) {
@@ -131,7 +131,7 @@ int main( int argc, char **argv ) {
                 break;
             }
         }
-        else if(status == 1){
+        else if(status == ArucoLocalization::Status::MARKER_NOT_DETECTED){
             frame = cv_system.get_frame();
             cv::imshow("Found aruco marker", frame);
             cv::waitKey();
@@ -139,7 +139,7 @@ int main( int argc, char **argv ) {
             video_capture.release();
             return 5;
         }
-        else if(status == 2){
+        else if(status == ArucoLocalization::Status::END_OF_VIDEO_FILE){
             break;
         }
     }

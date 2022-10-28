@@ -150,6 +150,13 @@ class ArucoLocalization {
 
 	public:
 
+	enum Status {
+		NOT_MARKER_INDEX = -1,
+		OK,
+		END_OF_VIDEO_FILE,
+		MARKER_NOT_DETECTED
+	};
+
 	/**
 	 * Constructor.
 	 * 

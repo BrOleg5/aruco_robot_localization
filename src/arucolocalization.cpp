@@ -113,16 +113,16 @@ int ArucoLocalization::detectMarkers() {
 	videoCapture >> currentVideoFrame;
 	if(currentVideoFrame.empty()) {
 		std::cout << "End of video file.\n";
-		return 2;
+		return Status::END_OF_VIDEO_FILE;
 	}
 	markerIds.clear();
 	cv::aruco::detectMarkers(currentVideoFrame, dictionary, markerCorners, markerIds, detectorParameters, rejectedCandidates);
 	if (!markerCorners.empty() && !markerIds.empty()) {
-		return 0;
+		return Status::OK;
 	}
 	else {
-		std::cerr << "Error detecting aruco marker" << std::endl;
-		return 1;
+		std::cerr << "Markers are not detected.\n";
+		return Status::MARKER_NOT_DETECTED;
 	}
 }
 
@@ -132,7 +132,7 @@ int ArucoLocalization::filterMarkers(int markerID) {
 		return *markerIterator;
 	}
 	else {
-		return -1;
+		return Status::NOT_MARKER_INDEX;
 	}
 }
 

@@ -171,7 +171,7 @@ int main( int argc, char **argv ) {
         current_time = std::chrono::steady_clock::now();
         time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
         int status = cv_system.detectMarkers();
-        if (status == 0) {
+        if (status == ArucoLocalization::Status::OK) {
             if(has_marker_id) {
                 if(!cv_system.estimatePosition(&transfer, markerID)) {
                     return 5;
@@ -203,7 +203,7 @@ int main( int argc, char **argv ) {
                 videoWriter.write(cv_system.get_frame());
             }
         }
-        else if(status == 1) {
+        else if(status == ArucoLocalization::Status::MARKER_NOT_DETECTED) {
             std::cout << "Robot localization failed." << std::endl;
             video_capture.release();
             if(writeVideo) {
@@ -211,7 +211,7 @@ int main( int argc, char **argv ) {
             }
             return 6;
         }
-        else if(status == 2) {
+        else if(status == ArucoLocalization::Status::END_OF_VIDEO_FILE) {
             break;
         }
         prev_time = time;
