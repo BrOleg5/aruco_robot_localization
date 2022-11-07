@@ -53,6 +53,9 @@ namespace td {
 
 		cv::Point2f pixelResolution;
 
+
+		TransferData() : currGlobalCartesian(0.0f, 0.0f), prevGlobalCartesian(0.0f, 0.0f), currAngle(0.0f),
+						 prevAngle(0.0f), deltaAngle(0.0f), deltaEigenCartesian(0.0f, 0.0f), pixelResolution({0.f, 0.f}) {}
 		/**
 		 * Initializtion each coordinate as zero.
 		 */
@@ -157,6 +160,8 @@ class ArucoLocalization {
 		MARKER_NOT_DETECTED
 	};
 
+
+	ArucoLocalization();
 	/**
 	 * Constructor.
 	 * 

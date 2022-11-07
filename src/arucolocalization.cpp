@@ -96,6 +96,13 @@ float td::rad2deg(float rad) {
 	return (rad / PI * 180.0f);
 }
 
+ArucoLocalization::ArucoLocalization() {
+	for (int i = 0; i < 3; i++) {
+		arucoCorner[i].x = 0;
+		arucoCorner[i].y = 0;
+	}
+}
+
 ArucoLocalization::ArucoLocalization(const cv::VideoCapture& video_capture, 
 									 cv::aruco::PREDEFINED_DICTIONARY_NAME dict_name) {
 	for (int i = 0; i < 3; i++) {
