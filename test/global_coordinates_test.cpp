@@ -34,20 +34,20 @@ int main( int argc, char **argv ) {
         dictionary_name = cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionary_id);
     }
     else {
-        std::cout << "Dictionary not specified" << std::endl;
-        return 1;
+        std::cout << "Dictionary not specified.\n";
+        return -1;
     }
 
-    cv::VideoCapture video_capture;
+    cv::VideoCapture videoCapture;
     std::string testImagesPath;
     if(parser.has("img")){
         testImagesPath = parser.get<std::string>("img");
         std::string images = testImagesPath + std::string("/test_frame_%1d.jpg");
-        video_capture.open(images, cv::CAP_IMAGES);
+        videoCapture.open(images, cv::CAP_IMAGES);
     }
     else {
         std::cout << "Test images path not specified.\n";
-        return 3;
+        return -1;
     }
 
     int markerID = 0;
@@ -56,7 +56,7 @@ int main( int argc, char **argv ) {
     }
     else {
         std::cout << "Marker ID not specified.\n";
-        return 4;
+        return -1;
     }
 
     std::string camParamFile;
@@ -65,17 +65,17 @@ int main( int argc, char **argv ) {
     }
     else {
         std::cout << "File of camera parameters not specified.\n";
-        return 5;
+        return -1;
     }
     cv::Point2f pixelResolution;
     if (!readCameraParameters(camParamFile, pixelResolution)) {
         std::cout << "Read camera parameters error.\n";
-        return 6;
+        return -1;
     }
     // validate data
     if((pixelResolution.x == 0) || (pixelResolution.y == 0)) {
         std::cout << "Get invalid camera parameters.\n";
-        return 7;
+        return -1;
     }
 
     const int frame_num = 5;
@@ -83,38 +83,40 @@ int main( int argc, char **argv ) {
     std::string frameCoordinateFilePath = testImagesPath + "/frame_coordinate.json";
     if(!readCoordinates(frameCoordinateFilePath, frameCoordinate, frame_num)) {
         std::cout << "Read coordinate error.\n";
-        return 8;
+        return -1;
     }
 
     float coord_treshold = 1;
     float angle_treshold = 1;
 
+    cv::Mat frame;
 	td::TransferData transfer(pixelResolution);
-	ArucoLocalization cv_system(video_capture, dictionary_name);
+	ArucoLocalization cv_system(dictionary_name);
+    int frame_width = 1920;
+    int frame_height = 1080;
+    cv_system.setFrameSize(frame_width, frame_height);
+    bool success = true;
     for (int i = 0; i < frame_num; i++) {
-        int status = cv_system.detectMarkers();
-        if (status == 0) {
+        videoCapture >> frame;
+        if (cv_system.detectMarkers(frame)) {
             if(!cv_system.estimatePosition(&transfer, markerID)) {
-                return 9;
+                success = false;
+                break;
             }
             if ((std::abs(transfer.currGlobalCartesian.x - frameCoordinate[i].x) > coord_treshold) ||
                 (std::abs(transfer.currGlobalCartesian.y - frameCoordinate[i].y) > coord_treshold) ||
                 (std::abs(transfer.currAngle - frameCoordinate[i].z) > angle_treshold)) {
-                std::cout << "Test failed.\n";
-                return 10;
+                success = false;
+                break;
             }
         }
-        else if(status == 1) {
-            std::cout << "Robot localization failed." << std::endl;
-            video_capture.release();
-            return 11;
-        }
-        else if(status == 2) {
+        else {
+            success = false;
             break;
         }
     }
-    video_capture.release();
-    std::cout << "Test success.\n";
+    videoCapture.release();
+    std::cout << (success ? "Test success.\n" : "Test failed.\n;");
 	return 0;
 }
 

@@ -103,33 +103,23 @@ ArucoLocalization::ArucoLocalization() {
 	}
 }
 
-ArucoLocalization::ArucoLocalization(const cv::VideoCapture& video_capture, 
-									 cv::aruco::PREDEFINED_DICTIONARY_NAME dict_name) {
+ArucoLocalization::ArucoLocalization(cv::aruco::PREDEFINED_DICTIONARY_NAME dict_name) {
 	for (int i = 0; i < 3; i++) {
 		arucoCorner[i].x = 0;
 		arucoCorner[i].y = 0;
 	}
-	videoCapture = video_capture;
-	frame_height = static_cast<int>(videoCapture.get(cv::CAP_PROP_FRAME_HEIGHT));
-	frame_width = static_cast<int>(videoCapture.get(cv::CAP_PROP_FRAME_WIDTH));
 	detectorParameters = cv::aruco::DetectorParameters::create();
 	dictionary = cv::aruco::getPredefinedDictionary(dict_name);
 }
 
-int ArucoLocalization::detectMarkers() {
-	videoCapture >> currentVideoFrame;
-	if(currentVideoFrame.empty()) {
-		std::cout << "End of video file.\n";
-		return Status::END_OF_VIDEO_FILE;
-	}
+bool ArucoLocalization::detectMarkers(const cv::Mat& frame) {
 	markerIds.clear();
-	cv::aruco::detectMarkers(currentVideoFrame, dictionary, markerCorners, markerIds, detectorParameters, rejectedCandidates);
+	cv::aruco::detectMarkers(frame, dictionary, markerCorners, markerIds, detectorParameters);
 	if (!markerCorners.empty() && !markerIds.empty()) {
-		return Status::OK;
+		return true;
 	}
 	else {
-		std::cerr << "Markers are not detected.\n";
-		return Status::MARKER_NOT_DETECTED;
+		return false;
 	}
 }
 
@@ -139,7 +129,7 @@ int ArucoLocalization::filterMarkers(int markerID) {
 		return *markerIterator;
 	}
 	else {
-		return Status::NOT_MARKER_INDEX;
+		return -1;
 	}
 }
 
@@ -171,39 +161,22 @@ bool ArucoLocalization::estimatePosition(td::TransferData* data, int markerID) {
 	return true;
 }
 
-void ArucoLocalization::show_markers() {    
-	cv::Mat outputImage;
-	currentVideoFrame.copyTo(outputImage);
-	cv::aruco::drawDetectedMarkers(outputImage, markerCorners, markerIds);
-	cv::imshow("Found aruco markers", outputImage);
-}
-
-cv::Mat ArucoLocalization::draw_marker(int markerID) {
-	cv::Mat outputImage;
-	currentVideoFrame.copyTo(outputImage);
+bool ArucoLocalization::draw_marker(cv::InputOutputArray frame, int markerID) {
 	if(markerID >= 0) {
 		int markerIndex = filterMarkers(markerID);
 		if(markerIndex >= 0) {
 			std::vector<std::vector<cv::Point2f>> oneMarkerCorner = {markerCorners[markerIndex]};
 			std::vector<int> oneMarkerIds = {markerIds[markerIndex]};
-			cv::aruco::drawDetectedMarkers(outputImage, oneMarkerCorner, oneMarkerIds);
+			cv::aruco::drawDetectedMarkers(frame, oneMarkerCorner, oneMarkerIds);
 		}
 		else {
-			std::cerr << "Marker with ID = " << markerID << " not searched.\n";
+			return false;
 		}
 	}
 	else {
-		std::cerr << "Invalid marker ID = " << markerID << '\n';
+		cv::aruco::drawDetectedMarkers(frame, markerCorners, markerIds);
 	}
-	return outputImage;
-}
-
-void ArucoLocalization::show_frame() {
-	cv::imshow("Cam frame", currentVideoFrame);
-}
-
-cv::Mat ArucoLocalization::get_frame() {
-	return currentVideoFrame;
+	return true;
 }
 
 void ArucoLocalization::getMarkersCorners(std::vector<std::vector<cv::Point2f>>& marker_corners) {
@@ -212,4 +185,67 @@ void ArucoLocalization::getMarkersCorners(std::vector<std::vector<cv::Point2f>>&
 
 void ArucoLocalization::getMarkersIndexes(std::vector<int>& marker_ids) {
 	marker_ids = markerIds;
+}
+
+void ArucoLocalization::setMarkerDictonary(cv::aruco::PREDEFINED_DICTIONARY_NAME dict_name) {
+	dictionary = cv::aruco::getPredefinedDictionary(dict_name);
+}
+
+void ArucoLocalization::setMarkerDictionary(int dict_id) {
+	dictionary = cv::aruco::getPredefinedDictionary(dict_id);
+}
+
+void ArucoLocalization::setFrameSize(int frame_width, int frame_height) {
+	this->frame_width = frame_width;
+	this->frame_height = frame_height;
+}
+
+std::string getDictionaryName(int dict_id) {
+	switch (dict_id) {
+	case cv::aruco::DICT_4X4_50:
+		return std::string("DICT_4X4_50");
+	case cv::aruco::DICT_4X4_100:
+		return std::string("DICT_4X4_100");
+	case cv::aruco::DICT_4X4_250:
+		return std::string("DICT_4X4_250");
+	case cv::aruco::DICT_4X4_1000:
+		return std::string("DICT_4X4_1000");
+	case cv::aruco::DICT_5X5_50:
+		return std::string("DICT_5X5_50");
+	case cv::aruco::DICT_5X5_100:
+		return std::string("DICT_5X5_100");
+	case cv::aruco::DICT_5X5_250:
+		return std::string("DICT_5X5_250");
+	case cv::aruco::DICT_5X5_1000:
+		return std::string("DICT_5X5_1000");
+	case cv::aruco::DICT_6X6_50:
+		return std::string("DICT_6X6_50");
+	case cv::aruco::DICT_6X6_100:
+		return std::string("DICT_6X6_100");
+	case cv::aruco::DICT_6X6_250:
+		return std::string("DICT_6X6_250");
+	case cv::aruco::DICT_6X6_1000:
+		return std::string("DICT_6X6_1000");
+	case cv::aruco::DICT_7X7_50:
+		return std::string("DICT_7X7_50");
+	case cv::aruco::DICT_7X7_100:
+		return std::string("DICT_7X7_100");
+	case cv::aruco::DICT_7X7_250:
+		return std::string("DICT_7X7_250");
+	case cv::aruco::DICT_7X7_1000:
+		return std::string("DICT_7X7_1000");
+	case cv::aruco::DICT_ARUCO_ORIGINAL:
+		return std::string("DICT_ARUCO_ORIGINAL");
+	case cv::aruco::DICT_APRILTAG_16h5:
+		return std::string("DICT_APRILTAG_16h5");
+	case cv::aruco::DICT_APRILTAG_25h9:
+		return std::string("DICT_APRILTAG_25h9");
+	case cv::aruco::DICT_APRILTAG_36h10:
+		return std::string("DICT_APRILTAG_36h10");
+	case cv::aruco::DICT_APRILTAG_36h11:
+		return std::string("DICT_APRILTAG_36h11");
+
+	default:
+		return std::string("Undefined dictionary");
+	}
 }

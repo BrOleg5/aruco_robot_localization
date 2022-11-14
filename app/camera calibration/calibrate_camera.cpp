@@ -35,52 +35,52 @@ int main( int argc, char **argv ) {
         dictionary_name = cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionary_id);
     }
     else {
-        std::cerr << "Dictionary not specified" << std::endl;
-        return 1;
+        std::cout << "Dictionary is not specified.\n";
+        return -1;
     }
 
-    cv::VideoCapture video_capture;
+    cv::VideoCapture videoCapture;
     if(parser.has("ci")) {
         int cam_id = parser.get<int>("ci");
         #ifdef WIN32
-            video_capture.open(cam_id, cv::CAP_DSHOW);
+            videoCapture.open(cam_id, cv::CAP_DSHOW);
         #else
-            video_capture.open(cam_id);
+            videoCapture.open(cam_id);
         #endif
-        video_capture.set(cv::CAP_PROP_FRAME_WIDTH, 1920);
-        video_capture.set(cv::CAP_PROP_FRAME_HEIGHT, 1080);
-        video_capture.set(cv::CAP_PROP_FOCUS, 0); // min: 0, max: 255, increment:5
-        video_capture.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
-        video_capture.set(cv::CAP_PROP_BUFFERSIZE, 1);
+        videoCapture.set(cv::CAP_PROP_FRAME_WIDTH, 1920);
+        videoCapture.set(cv::CAP_PROP_FRAME_HEIGHT, 1080);
+        videoCapture.set(cv::CAP_PROP_FOCUS, 0); // min: 0, max: 255, increment:5
+        videoCapture.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
+        videoCapture.set(cv::CAP_PROP_BUFFERSIZE, 1);
         // link: https://stackoverflow.com/a/70074022
         #ifdef WIN32
-            video_capture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
+            videoCapture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
         #endif
 
         //Checking for the camera to be connected 
-        if (video_capture.isOpened()) {
-            std::cout << "Camera connected." << std::endl;
+        if (videoCapture.isOpened()) {
+            std::cout << "Camera is connected.\n";
         }
         else {
-            std::cerr << "Camera not connected." << std::endl;
-            return 2;
+            std::cout << "Camera is not connected.\n";
+            return -1;
         }
     }
     else if(parser.has("v")){
         std::string videoFile = parser.get<std::string>("v");
-        video_capture.open(videoFile);
+        videoCapture.open(videoFile);
         //Checking for the video file to be opened 
-        if (video_capture.isOpened()) {
-            std::cout << "Video file opened." << std::endl;
+        if (videoCapture.isOpened()) {
+            std::cout << "Video file is opened.\n";
         }
         else {
-            std::cerr << "Video file not opened." << std::endl;
-            return 2;
+            std::cout << "Video file is not opened.\n";
+            return -1;
         }
     }
     else {
-        std::cerr << "Camera of video file not specified" << std::endl;
-        return 3;
+        std::cout << "Camera of video file is not specified.\n";
+        return -1;
     }
 
     int markerID = 0;
@@ -88,7 +88,8 @@ int main( int argc, char **argv ) {
         markerID = parser.get<int>("id");
     }
     else {
-        markerID = -1;
+        std::cout << "Aruco marker is not specified.\n";
+        return -1;
     }
 
     int calibFrameNumber = 30;
@@ -100,6 +101,10 @@ int main( int argc, char **argv ) {
     if(parser.has("ms")) {
         markerSize = parser.get<float>("ms");
     }
+    else {
+        std::cout << "Size of aruco marker is not specified.\n";
+        return -1;
+    }
 
     std::string outputFile;
     if(parser.has("o")){
@@ -108,46 +113,34 @@ int main( int argc, char **argv ) {
 
     if(!parser.check()) {
         parser.printErrors();
-        return 4;
+        return -1;
     }
 
-	ArucoLocalization cv_system(video_capture, dictionary_name);
+	ArucoLocalization cv_system(dictionary_name);
+    cv::Mat frame;
     std::vector<std::vector<cv::Point2f>> calibMarkerCorners;
     for (int i = 0; i < calibFrameNumber; i++) {
-        int status = cv_system.detectMarkers();
-        if (status == 0) {
-            std::vector<int> marker_ids;
-            cv_system.getMarkersIndexes(marker_ids);
-            int markerIndex = 0;
-            if(markerID >= 0) {
-                std::vector<int>::iterator markerIterator = std::find(marker_ids.begin(), marker_ids.end(), markerID);
-                if(markerIterator != marker_ids.end()) {
-                    markerIndex = static_cast<int>(markerIterator - marker_ids.begin());
-                }
-                else {
-                    std::cerr << "Marker with ID=" << markerID << " not searched.\n";
-                    return 1;
-                }
+        videoCapture >> frame;
+        if(cv_system.detectMarkers(frame)) {
+            int markerIndex = cv_system.filterMarkers(markerID);
+            if(markerIndex < 0) {
+                std::cout << "Marker with ID=" << markerID << " not searched.\n";
+                break;
             }
             std::vector<std::vector<cv::Point2f>> markers_corners;
             cv_system.getMarkersCorners(markers_corners);
             calibMarkerCorners.push_back(markers_corners[markerIndex]);
         }
-        else if(status == 1) {
-            std::cout << "Marker localization failed." << std::endl;
-            video_capture.release();
-            return 2;
-        }
-        else if(status == 2) {
+        else {
+            std::cout << "Marker localization failed.\n";
             break;
         }
     }
-    video_capture.release();
+    videoCapture.release();
     cv::Point2f std = {0.0f, 0.0f};
     cv::Point2f pixelResolution = calibrate(calibMarkerCorners, markerSize, std);
-    if (!saveCameraParams(outputFile, pixelResolution, markerSize, std))
-    {
-        return 3;
+    if (!saveCameraParams(outputFile, pixelResolution, markerSize, std)) {
+        return -1;
     }
 	return 0;
 }

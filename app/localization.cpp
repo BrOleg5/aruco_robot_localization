@@ -5,6 +5,8 @@
 #include <iomanip>
 #include "read_save_camera_parameters.hpp"
 
+using namespace std::chrono;
+
 //link: https://learn.microsoft.com/en-us/windows/console/registering-a-control-handler-function?source=recommendations
 #if  defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
 #   include <windows.h>
@@ -60,57 +62,59 @@ int main( int argc, char **argv ) {
     }
     else {
         std::cout << "Dictionary not specified" << std::endl;
-        return 1;
+        return -1;
     }
 
-    cv::VideoCapture video_capture;
+    int frame_width = 1920;
+    int frame_height = 1080;
+    cv::VideoCapture videoCapture;
     if(parser.has("ci")) {
         int cam_id = parser.get<int>("ci");
         #ifdef WIN32
-            video_capture.open(cam_id, cv::CAP_DSHOW);
+            videoCapture.open(cam_id, cv::CAP_DSHOW);
         #else
-            video_capture.open(cam_id);
+            videoCapture.open(cam_id);
         #endif
-        video_capture.set(cv::CAP_PROP_FRAME_WIDTH, 1920);
-        video_capture.set(cv::CAP_PROP_FRAME_HEIGHT, 1080);
-        video_capture.set(cv::CAP_PROP_FOCUS, 0); // min: 0, max: 255, increment:5
-        video_capture.set(cv::CAP_PROP_BUFFERSIZE, 1);
+        videoCapture.set(cv::CAP_PROP_FRAME_WIDTH, frame_width);
+        videoCapture.set(cv::CAP_PROP_FRAME_HEIGHT, frame_height);
+        videoCapture.set(cv::CAP_PROP_FOCUS, 0); // min: 0, max: 255, increment:5
+        videoCapture.set(cv::CAP_PROP_BUFFERSIZE, 1);
         // link: https://stackoverflow.com/a/70074022
         #ifdef WIN32
-            video_capture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
+            videoCapture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
         #endif
         if(parser.has("ce")) {
-            video_capture.set(cv::CAP_PROP_AUTO_EXPOSURE, 0);
-            video_capture.set(cv::CAP_PROP_EXPOSURE, parser.get<double>("ce"));
+            videoCapture.set(cv::CAP_PROP_AUTO_EXPOSURE, 0);
+            videoCapture.set(cv::CAP_PROP_EXPOSURE, parser.get<double>("ce"));
         }
         else {
-            video_capture.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
+            videoCapture.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
         }
 
         //Checking for the camera to be connected 
-        if (video_capture.isOpened()) {
+        if (videoCapture.isOpened()) {
             std::cout << "Camera connected." << std::endl;
         }
         else {
             std::cout << "Camera not connected." << std::endl;
-            return 2;
+            return -1;
         }
     }
     else if(parser.has("v")) {
         std::string videoFile = parser.get<std::string>("v");
-        video_capture.open(videoFile);
+        videoCapture.open(videoFile);
         //Checking for the video file to be opened 
-        if (video_capture.isOpened()) {
+        if (videoCapture.isOpened()) {
             std::cout << "Video file opened." << std::endl;
         }
         else {
             std::cout << "Video file not opened." << std::endl;
-            return 2;
+            return -1;
         }
     }
     else {
         std::cout << "Camera of video file not specified" << std::endl;
-        return 3;
+        return -1;
     }
 
     bool has_marker_id = parser.has("id");
@@ -126,14 +130,14 @@ int main( int argc, char **argv ) {
     cv::Point2f pixelResolution;
     if (!readCameraParameters(camParamFile, pixelResolution)) {
         std::cout << "Read camera parameters error.\n";
-        return 7;
+        return -1;
     }
     std::cout << "Camera parameters:\n\tpixel resolution x: " << pixelResolution.x 
             << "\n\tpixel resolution y: " << pixelResolution.y << '\n';
     // validate data
     if((pixelResolution.x == 0) || (pixelResolution.y == 0)) {
         std::cout << "Get invalid camera parameters.\n";
-        return 8;
+        return -1;
     }
     
     bool writeVideo = parser.has("ov");
@@ -145,37 +149,43 @@ int main( int argc, char **argv ) {
         bool status = videoWriter.open(outputFile, cv::VideoWriter::fourcc('M', 'P', '4', 'V'), 30, cv::Size(1920, 1080), true);
         if(!status) {
             std::cout << "Video writer not initialized.\n";
-            return 11;
+            return -1;
         }
     }
 
     if(!parser.check()) {
         parser.printErrors();
-        return 4;
+        return -1;
     }
 
     #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__)
     if(!SetConsoleCtrlHandler(CtrlHandler, TRUE)) {
         std::cout << "Could not set control handler\n";
-        return 7;
+        return -1;
     }
     #endif
 
     cv::Mat frame;
 	td::TransferData transfer(pixelResolution);
-	ArucoLocalization cv_system(video_capture, dictionary_name);
-	std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
-    std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
-    long long time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
+	ArucoLocalization cv_system(dictionary_name);
+    cv_system.setFrameSize(frame_width, frame_height);
+	steady_clock::time_point start_time = steady_clock::now();
+    steady_clock::time_point current_time = steady_clock::now();
+    long long time = duration_cast<milliseconds>(current_time - start_time).count();
     long long prev_time = time;
     while ((time <= test_duration) || (test_duration == 0)) {
-        current_time = std::chrono::steady_clock::now();
-        time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
-        int status = cv_system.detectMarkers();
-        if (status == ArucoLocalization::Status::OK) {
+        videoCapture >> frame;
+        if(frame.empty()) {
+            std::cout << "End of video file.\n";
+            break;
+        }
+        current_time = steady_clock::now();
+        time = duration_cast<milliseconds>(current_time - start_time).count();
+        if(cv_system.detectMarkers(frame)) {
             if(has_marker_id) {
                 if(!cv_system.estimatePosition(&transfer, markerID)) {
-                    return 5;
+                    std::cout << "Marker with ID " << markerID << "not found.\n";
+                    break;
                 }
             }
             else {
@@ -201,21 +211,13 @@ int main( int argc, char **argv ) {
                 std::cout << " | " << std::setw(15) << transfer.deltaAngle / dt << " |\n";
             }
             if(writeVideo) {
-                videoWriter.write(cv_system.get_frame());
+                videoWriter.write(frame);
             }
         }
-        else if(status == ArucoLocalization::Status::MARKER_NOT_DETECTED) {
-            std::cout << "Robot localization failed." << std::endl;
-            frame = cv_system.get_frame();
-            cv::imshow("Found aruco marker", frame);
+        else {
+            std::cout << "Robot localization failed.\n";
+            cv::imshow("Camera frame", frame);
             cv::waitKey();
-            video_capture.release();
-            if(writeVideo) {
-                videoWriter.release();
-            }
-            return 6;
-        }
-        else if(status == ArucoLocalization::Status::END_OF_VIDEO_FILE) {
             break;
         }
         prev_time = time;
@@ -225,7 +227,7 @@ int main( int argc, char **argv ) {
         }
         #endif
     }
-    video_capture.release();
+    videoCapture.release();
     if(writeVideo) {
         videoWriter.release();
     }

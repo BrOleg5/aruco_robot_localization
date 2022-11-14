@@ -3,6 +3,8 @@
 #include <iomanip>
 #include <chrono>
 
+using namespace std::chrono;
+
 const std::string about = "Localization of Aruco marker.";
 const std::string keys  =
         "{h help ? usage |       | Print help message}"
@@ -32,64 +34,63 @@ int main( int argc, char **argv ) {
         dictionary_name = cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionary_id);
     }
     else {
-        std::cerr << "Dictionary not specified" << std::endl;
-        return 1;
+        std::cout << "Dictionary not specified" << std::endl;
+        return -1;
     }
 
-    cv::VideoCapture video_capture;
+    cv::VideoCapture videoCapture;
     if(parser.has("ci")) {
         int cam_id = parser.get<int>("ci");
         #ifdef WIN32
-            video_capture.open(cam_id, cv::CAP_DSHOW);
+            videoCapture.open(cam_id, cv::CAP_DSHOW);
         #else
-            video_capture.open(cam_id);
+            videoCapture.open(cam_id);
         #endif
-        video_capture.set(cv::CAP_PROP_FRAME_WIDTH, 1920);
-        video_capture.set(cv::CAP_PROP_FRAME_HEIGHT, 1080);
-        video_capture.set(cv::CAP_PROP_FOCUS, 0); // min: 0, max: 255, increment:5
-        video_capture.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
-        video_capture.set(cv::CAP_PROP_BUFFERSIZE, 1);
+        videoCapture.set(cv::CAP_PROP_FRAME_WIDTH, 1920);
+        videoCapture.set(cv::CAP_PROP_FRAME_HEIGHT, 1080);
+        videoCapture.set(cv::CAP_PROP_FOCUS, 0); // min: 0, max: 255, increment:5
+        videoCapture.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
+        videoCapture.set(cv::CAP_PROP_BUFFERSIZE, 1);
         // link: https://stackoverflow.com/a/70074022
         #ifdef WIN32
-            video_capture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
+            videoCapture.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('M', 'J', 'P', 'G'));
         #endif
         if(parser.has("ce")) {
-            video_capture.set(cv::CAP_PROP_AUTO_EXPOSURE, 0);
-            video_capture.set(cv::CAP_PROP_EXPOSURE, parser.get<double>("ce"));
+            videoCapture.set(cv::CAP_PROP_AUTO_EXPOSURE, 0);
+            videoCapture.set(cv::CAP_PROP_EXPOSURE, parser.get<double>("ce"));
         }
         else {
-            video_capture.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
+            videoCapture.set(cv::CAP_PROP_AUTO_EXPOSURE, 1);
         }
 
         //Checking for the camera to be connected 
-        if (video_capture.isOpened()) {
+        if (videoCapture.isOpened()) {
             std::cout << "Camera connected." << std::endl;
         }
         else {
-            std::cerr << "Camera not connected." << std::endl;
-            return 2;
+            std::cout << "Camera not connected." << std::endl;
+            return -1;
         }
     }
     else if(parser.has("iv")){
         std::string videoFile = parser.get<std::string>("iv");
-        video_capture.open(videoFile);
+        videoCapture.open(videoFile);
         //Checking for the video file to be opened 
-        if (video_capture.isOpened()) {
+        if (videoCapture.isOpened()) {
             std::cout << "Video file opened." << std::endl;
         }
         else {
-            std::cerr << "Video file not opened." << std::endl;
-            return 2;
+            std::cout << "Video file not opened." << std::endl;
+            return -1;
         }
     }
     else {
-        std::cerr << "Camera of video file not specified" << std::endl;
-        return 3;
+        std::cout << "Camera of video file not specified" << std::endl;
+        return -1;
     }
 
-    bool has_marker_id = parser.has("id");
-    int markerID = 0;
-    if(has_marker_id) {
+    int markerID = -1;
+    if(parser.has("id")) {
         markerID = parser.get<int>("id");
     }
 
@@ -102,47 +103,48 @@ int main( int argc, char **argv ) {
 
     if(!parser.check()) {
         parser.printErrors();
-        return 4;
+        return -1;
     }
 
-	ArucoLocalization cv_system(video_capture, dictionary_name);
+	ArucoLocalization cv_system(dictionary_name);
     cv::Mat frame;
-    std::chrono::steady_clock::time_point start_time = std::chrono::steady_clock::now();
-    std::chrono::steady_clock::time_point current_time = std::chrono::steady_clock::now();
-    long long time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
+    steady_clock::time_point start_time = steady_clock::now();
+    steady_clock::time_point current_time = steady_clock::now();
+    long long time = duration_cast<milliseconds>(current_time - start_time).count();
     while(true) {
-        start_time = std::chrono::steady_clock::now();
-        int status = cv_system.detectMarkers();
-        current_time = std::chrono::steady_clock::now();
-        time = std::chrono::duration_cast<std::chrono::milliseconds>(current_time - start_time).count();
-        std::cout << "Time process one frame: " << time << " ms\n";
-        if(status == ArucoLocalization::Status::OK) {
-            if(has_marker_id) {
-                frame = cv_system.draw_marker(markerID);
-                if(write_video) {
-                    video_writer.write(frame);
-                }
-                cv::imshow("Found aruco marker", frame);
+        videoCapture >> frame;
+        if(frame.empty()) {
+            std::cout << "End of video file.\n";
+            break;
+        }
+        start_time = steady_clock::now();
+        bool status = cv_system.detectMarkers(frame);
+        current_time = steady_clock::now();
+        time = duration_cast<milliseconds>(current_time - start_time).count();
+        std::cout << "Time process one frame: " << time << " ms\r";
+        if(status) {
+            if(!cv_system.draw_marker(frame, markerID)) {
+                std::cout << "Marker with ID " << markerID << "not found.\n";
+                break;
             }
-            else {
-                cv_system.show_markers();
+            if(write_video) {
+                video_writer.write(frame);
             }
+            cv::imshow("Found aruco markers", frame);
             if(cv::pollKey() == 'q') {
                 break;
             }
         }
-        else if(status == ArucoLocalization::Status::MARKER_NOT_DETECTED){
-            frame = cv_system.get_frame();
-            cv::imshow("Found aruco marker", frame);
+        else {
+            std::cout << "Aruco markers not found.\n";
+            cv::imshow("Camera frame", frame);
             cv::waitKey();
-            std::cout << "Cam frame" << std::endl;
-            video_capture.release();
-            return 5;
-        }
-        else if(status == ArucoLocalization::Status::END_OF_VIDEO_FILE){
             break;
         }
     }
-    video_capture.release();
+    videoCapture.release();
+    if(write_video) {
+        video_writer.release();
+    }
 	return 0;
 }
