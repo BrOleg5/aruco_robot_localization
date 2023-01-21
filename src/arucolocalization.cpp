@@ -101,14 +101,10 @@ ArucoLocalization::ArucoLocalization() {
 		arucoCorner[i].x = 0;
 		arucoCorner[i].y = 0;
 	}
+	detectorParameters = cv::aruco::DetectorParameters::create();
 }
 
-ArucoLocalization::ArucoLocalization(cv::aruco::PREDEFINED_DICTIONARY_NAME dict_name) {
-	for (int i = 0; i < 3; i++) {
-		arucoCorner[i].x = 0;
-		arucoCorner[i].y = 0;
-	}
-	detectorParameters = cv::aruco::DetectorParameters::create();
+ArucoLocalization::ArucoLocalization(cv::aruco::PREDEFINED_DICTIONARY_NAME dict_name): ArucoLocalization() {
 	dictionary = cv::aruco::getPredefinedDictionary(dict_name);
 }
 
