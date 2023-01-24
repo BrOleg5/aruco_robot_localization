@@ -4,19 +4,28 @@ Application and library was created to localize mobile robot by Aruco marker, wh
 
 ## Requirements
 
+For library:
+
 - OpenCV v4.2.0 or later with extra modules (aruco)
-- [Boost shared memory wrapper](https://github.com/BrOleg5/boost-shared-memory-wrapper) v1.2 or later
 - gcc 9.3.0+ or MSVC 19+
 - CMake 3.0 or later
 
-## Configure, build and install library and application
+Additionally, for application:
+
+- [Boost shared memory wrapper](https://github.com/BrOleg5/boost-shared-memory-wrapper) v1.2 or later
+
+## Building
+
+You can build this package both pure CMake or colcon.
+
+### CMake
 
 ```bash
 # Create build directory
 mkdir build
 
 # Configure as static library
-cmake -S mobile-robot-localization/ -B build/
+cmake -S aruco_robot_localization/ -B build/
 
 # Build library
 cmake --build build/
@@ -25,29 +34,43 @@ cmake --build build/
 sudo cmake --install build/
 ```
 
+### Colcon
+
+Run in your workspace
+
+```bash
+colcon build --packages-select aruco_robot_localization
+```
+
 ### Extra options
 
 You can build and install tests:
 
 ```bash
-# Configure as static library
-cmake -S mobile-robot-localization/ -B build/ -D BUILD_TEST=ON
+# CMake
+cmake -S aruco_robot_localization/ -B build/ -DBUILD_TEST=ON
+
+# Colcon
+colcon build --packages-select aruco_robot_localization --cmake-args -DBUILD_TEST=ON
 ```
 
-If you want to build and install application:
+If you want to build and install applications:
 
 ```bash
-# Configure application
-cmake -S mobile-robot-localization/ -B build/ -D BUILD_APP=ON
+# CMake
+cmake -S aruco_robot_localization/ -B build/ -DBUILD_APP=ON
+
+# Colcon
+colcon build --packages-select aruco_robot_localization --cmake-args -DBUILD_APP=ON
 ```
 
-## Using ArucoLocalization with CMake
+## Usage from an external CMake project
 
-Add this strings in your CMakeLists.txt file:
+Add this lines in your CMakeLists.txt file:
 
 ```CMake
-find_package(ArucoLocalization 2.0 REQUIRED)
-target_link_libraries(<ProjectName> arucolocalization)
+find_package(aruco_robot_localization 2.0 REQUIRED)
+target_link_libraries(<ProjectName> aruco_robot_localization)
 # if nessesary, add include directories to target
-target_include_directories(<ProjectName> ${ArucoLocalization_INCLUDE_DIRS})
+target_include_directories(<ProjectName> ${aruco_robot_localization_INCLUDE_DIRS})
 ```

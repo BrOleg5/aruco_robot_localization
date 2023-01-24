@@ -1,6 +1,6 @@
 add_library(arucolocalization arucolocalization.cpp)
 
-find_package(OpenCV 4.2.0 REQUIRED)
+find_package(OpenCV 4.2.0 REQUIRED core aruco highgui imgproc videoio)
 
 set_target_properties(arucolocalization PROPERTIES
                       VERSION ${PROJECT_VERSION}
@@ -15,8 +15,8 @@ target_include_directories(arucolocalization PUBLIC
                            ${OpenCV_INCLUDE_DIRS})
 
 install(TARGETS arucolocalization
-        EXPORT ArucoLocalizationTargets
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin
-        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT lib
-        LIBRARY DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT shlib
-        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}" COMPONENT dev)
+        EXPORT ${PROJECT_NAME}Targets
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT Runtime
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Development
+        LIBRARY DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT Runtime
+        PUBLIC_HEADER DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME}" COMPONENT Development)

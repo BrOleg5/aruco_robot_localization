@@ -1,13 +1,12 @@
 cmake_minimum_required(VERSION 3.0)
 
-set(ARUCOLOCALIZATION_MAJOR_VERSION 2)
-set(ARUCOLOCALIZATION_MINOR_VERSION 0)
-set(ARUCOLOCALIZATION_PATCH_VERSION 0)
-set(ARUCOLOCALIZATION_VERSION 
-    ${ARUCOLOCALIZATION_MAJOR_VERSION}.${ARUCOLOCALIZATION_MINOR_VERSION}.${ARUCOLOCALIZATION_PATCH_VERSION})
+include("cmake/read_package_version.cmake")
 
-project(ArucoLocalization VERSION ${ARUCOLOCALIZATION_VERSION} DESCRIPTION 
-        "Library to localize mobile robot with atuco marker by static webcamera.")
+read_package_version_from_xml() # macro from cmake/macros.cmake
+project(aruco_robot_localization VERSION ${READ_PROJECT_VERSION} DESCRIPTION 
+  "Library to localize mobile robot with atuco marker by static webcamera.")
+
+include(GNUInstallDirs)
 
 if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
@@ -15,21 +14,10 @@ endif()
 
 if(MSVC)
   set(CMAKE_CXX_FLAGS_RELEASE "/O2")
+  set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "/O2")
 endif()
-
-# set cmake config install dirs
-if(WIN32 AND NOT CYGWIN)
-  set(DEF_INSTALL_CMAKE_DIR cmake)
-else()
-  set(DEF_INSTALL_CMAKE_DIR lib/cmake/ArucoLocalization)
-endif()
-set(INSTALL_CMAKE_DIR ${DEF_INSTALL_CMAKE_DIR} CACHE PATH
-  "Installation directory for CMake files")
 
 include(GNUInstallDirs)
-
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_LIBDIR}")
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 option(BUILD_APP "Build application to localize Aruco marker." OFF)
 option(BUILD_TEST "Build test programs." OFF)
@@ -46,35 +34,31 @@ if(BUILD_TEST)
   add_subdirectory(test)
 endif()
 
-# Add all targets to the build-tree export set
-export(TARGETS arucolocalization
-       FILE "${PROJECT_BINARY_DIR}/cmake/ArucoLocalizationTargets.cmake")
+include(CMakePackageConfigHelpers)
 
-# Export the package for use from the build-tree
-# (this registers the build-tree with a global CMake-registry)
-export(PACKAGE ArucoLocalization)
+set(INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/${PROJECT_NAME} CACHE PATH "Install path of include directories.")
+configure_package_config_file(${CMAKE_CURRENT_SOURCE_DIR}/cmake/Config.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake"
+  INSTALL_DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake
+  PATH_VARS INCLUDE_INSTALL_DIR
+  NO_CHECK_REQUIRED_COMPONENTS_MACRO
+)
 
-# Create the ArucoLocalizationConfig.cmake and ArucoLocalizationConfigVersion.cmake files
-# ... for the build tree
-set(CONF_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}")
-configure_file(cmake/ArucoLocalizationConfig.cmake.in
-               "${PROJECT_BINARY_DIR}/cmake/ArucoLocalizationConfig.cmake" @ONLY)
+write_basic_package_version_file("${PROJECT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake"
+  VERSION "${PROJECT_VERSION}"
+  COMPATIBILITY SameMajorVersion
+)
 
-# ... for the install tree
-set(CONF_INCLUDE_DIRS "${ARUCOLOCALIZATION_CMAKE_DIR}/${CMAKE_INSTALL_INCLUDEDIR}")
-configure_file(cmake/ArucoLocalizationConfig.cmake.in
-               "${PROJECT_BINARY_DIR}/cmake/ArucoLocalizationConfig.cmake" @ONLY)
-
-# ... for both
-configure_file(cmake/ArucoLocalizationConfigVersion.cmake.in
-               "${PROJECT_BINARY_DIR}/cmake/ArucoLocalizationConfigVersion.cmake" @ONLY)
-
-# Install the ArucoLocalizationConfig.cmake and ArucoLocalizationConfigVersion.cmake files
 install(FILES
-        "${PROJECT_BINARY_DIR}/cmake/ArucoLocalizationConfig.cmake"
-        "${PROJECT_BINARY_DIR}/cmake/ArucoLocalizationConfigVersion.cmake"
-        DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+  "${PROJECT_BINARY_DIR}/cmake/${PROJECT_NAME}Config.cmake"
+  "${PROJECT_BINARY_DIR}/cmake/${PROJECT_NAME}ConfigVersion.cmake"
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake COMPONENT Development
+)
+
+export(EXPORT ${PROJECT_NAME}Targets
+  FILE "${PROJECT_BINARY_DIR}/cmake/${PROJECT_NAME}Targets.cmake"
+)
 
 # Install the export set for use with the install-tree
-install(EXPORT ArucoLocalizationTargets
-        DESTINATION "${INSTALL_CMAKE_DIR}" COMPONENT dev)
+install(EXPORT ${PROJECT_NAME}Targets
+  DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake COMPONENT Development)

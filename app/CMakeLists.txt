@@ -12,7 +12,7 @@ target_include_directories(localization PUBLIC
 
 install(TARGETS localization
         EXPORT ArucoLocalizationTargets
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin)
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT Runtime)
 
 # # set header
 # set(HEADER ${PROJECT_SOURCE_DIR}/include/cmdoptionparser.hpp)
@@ -31,7 +31,7 @@ target_include_directories(generate_marker PUBLIC
 
 install(TARGETS generate_marker
         EXPORT ArucoLocalizationTargets
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin)
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT Runtime)
 
 
         
@@ -45,6 +45,6 @@ target_include_directories(detect_aruco_marker PUBLIC
 
 install(TARGETS detect_aruco_marker
         EXPORT ArucoLocalizationTargets
-        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin)
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT Runtime)
 
 add_subdirectory("camera calibration")

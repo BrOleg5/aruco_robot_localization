@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>aruco_robot_localization</name>
+  <version>2.0.0</version>
+  <description>Robot localization package</description>
+  <maintainer email="oleg.brylyov@mail.ru">BrOleg5</maintainer>
+  <license>Apache License 2.0</license>
+  <author>BrOleg5</author>
+
+  <depend>OpenCV</depend>
+
+  <export>
+    <build_type>cmake</build_type>
+  </export>
+</package>
