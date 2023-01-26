@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.0)
 
 include("cmake/read_package_version.cmake")
+read_package_version_from_xml()
 
-read_package_version_from_xml() # macro from cmake/macros.cmake
-project(aruco_robot_localization VERSION ${READ_PROJECT_VERSION} DESCRIPTION 
-  "Library to localize mobile robot with atuco marker by static webcamera.")
+project(aruco_robot_localization VERSION ${PACKAGE_VERSION})
+
+unset(PACKAGE_VERSION)
 
 include(GNUInstallDirs)
 

@@ -69,8 +69,7 @@ colcon build --packages-select aruco_robot_localization --cmake-args -DBUILD_APP
 Add this lines in your CMakeLists.txt file:
 
 ```CMake
-find_package(aruco_robot_localization 2.0 REQUIRED)
-target_link_libraries(<ProjectName> aruco_robot_localization)
-# if nessesary, add include directories to target
-target_include_directories(<ProjectName> ${aruco_robot_localization_INCLUDE_DIRS})
+find_package(aruco_robot_localization REQUIRED)
+target_link_libraries(YOU_TARGET_NAME ${aruco_robot_localization_LIBS})
+target_include_directories(YOU_TARGET_NAME ${aruco_robot_localization_INCLUDE_DIRS}) # Not needed for CMake >= 2.8.11
 ```
