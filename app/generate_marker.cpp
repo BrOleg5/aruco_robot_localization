@@ -1,7 +1,10 @@
-#include "opencv2/aruco.hpp"
-#include "opencv2/highgui.hpp"
+// Copyright 2022 BrOleg5
+
 #include <iostream>
+
 #include <opencv2/core/utility.hpp>
+#include <opencv2/aruco.hpp>
+#include <opencv2/highgui.hpp>
 
 enum ErrorCode : int {
     OK,
@@ -9,8 +12,8 @@ enum ErrorCode : int {
     NOT_ENOUGH_ARGUMENTS
 };
 
-const std::string about = "Aruco marker generator.";
-const std::string keys  =
+const char[] about = "Aruco marker generator.";
+const char[] keys  =
         "{h help ? usage |        | Print help message}"
         "{@outfile       | <none> | Output image }"
         "{d              |        | dictionary: DICT_4X4_50=0, DICT_4X4_100=1, DICT_4X4_250=2,"
@@ -39,9 +42,10 @@ int main( int argc, char **argv ) {
     cv::Ptr<cv::aruco::Dictionary> dictionary;
     if (parser.has("d")) {
         int dictionaryId = parser.get<int>("d");
-        dictionary = cv::aruco::getPredefinedDictionary(cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId));
-    }
-    else {
+        dictionary = cv::aruco::getPredefinedDictionary(
+            cv::aruco::PREDEFINED_DICTIONARY_NAME(dictionaryId)
+        );
+    } else {
         std::cout << "Dictionary not specified.\n";
         return ErrorCode::NOT_ENOUGH_ARGUMENTS;
     }
@@ -49,8 +53,7 @@ int main( int argc, char **argv ) {
     int marker_id = 0;
     if (parser.has("id")) {
         marker_id = parser.get<int>("id");
-    }
-    else {
+    } else {
         std::cout << "Marker ID not specified.\n";
         return ErrorCode::NOT_ENOUGH_ARGUMENTS;
     }
@@ -58,8 +61,7 @@ int main( int argc, char **argv ) {
     int img_size = 0;
     if (parser.has("ms")) {
         img_size = parser.get<int>("ms");
-    }
-    else {
+    } else {
         std::cout << "Marker size not specified.\n";
         return ErrorCode::NOT_ENOUGH_ARGUMENTS;
     }

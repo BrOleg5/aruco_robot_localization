@@ -1,3 +1,10 @@
+// Copyright 2022 BrOleg5
+
+#ifndef READ_SAVE_CAMERA_PARAMETERS_HPP_
+#define READ_SAVE_CAMERA_PARAMETERS_HPP_
+
+#include <string>
+
 #include <opencv2/core/types.hpp>
 #include <opencv2/core/persistence.hpp>
 
@@ -12,7 +19,8 @@ inline static bool readCameraParameters(std::string filename, cv::Point2f& pixel
     return true;
 }
 
-inline static bool saveCameraParams(const std::string &filename, const cv::Point2f& pixelResolution, 
+inline static bool saveCameraParams(const std::string &filename,
+                                    const cv::Point2f& pixelResolution,
                                     float markerSize,
                                     const cv::Point2f& std) {
     cv::FileStorage fs(filename, cv::FileStorage::WRITE || cv::FileStorage::FORMAT_JSON);
@@ -28,3 +36,5 @@ inline static bool saveCameraParams(const std::string &filename, const cv::Point
     fs.release();
     return true;
 }
+
+#endif  // READ_SAVE_CAMERA_PARAMETERS_HPP_

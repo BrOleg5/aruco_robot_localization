@@ -1,5 +1,7 @@
-#ifndef CMDOPTIONPARSER_H
-# define CMDOPTIONPARSER_H
+// Copyright 2022 BrOleg5
+
+#ifndef CMDOPTIONPARSER_HPP_
+#define CMDOPTIONPARSER_HPP_
 
 #include <string>
 #include <algorithm>
@@ -35,4 +37,4 @@ bool cmdOptionExists(char** begin, char** end, const std::string& option)
     return std::find(begin, end, option) != end;
 }
 
-#endif
+#endif  // CMDOPTIONPARSER_HPP_
