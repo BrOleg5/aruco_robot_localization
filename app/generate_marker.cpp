@@ -12,8 +12,8 @@ enum ErrorCode : int {
     NOT_ENOUGH_ARGUMENTS
 };
 
-const char[] about = "Aruco marker generator.";
-const char[] keys  =
+const char about[] = "Aruco marker generator.";
+const char keys[]  =
         "{h help ? usage |        | Print help message}"
         "{@outfile       | <none> | Output image }"
         "{d              |        | dictionary: DICT_4X4_50=0, DICT_4X4_100=1, DICT_4X4_250=2,"

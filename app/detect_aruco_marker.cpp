@@ -7,8 +7,8 @@
 
 #include "arucolocalization.hpp"
 
-const char[] about = "Localization of Aruco marker.";
-const char[] keys  =
+const char about[] = "Localization of Aruco marker.";
+const char keys[] =
         "{h help ? usage |       | Print help message}"
         "{d              |       | dictionary: DICT_4X4_50=0, DICT_4X4_100=1, DICT_4X4_250=2,"
         "DICT_4X4_1000=3, DICT_5X5_50=4, DICT_5X5_100=5, DICT_5X5_250=6, DICT_5X5_1000=7, "
@@ -109,6 +109,7 @@ int main( int argc, char **argv ) {
     steady_clock::time_point start_time = steady_clock::now();
     steady_clock::time_point current_time = steady_clock::now();
     using std::chrono::duration_cast;
+    using std::chrono::milliseconds;
     int64_t time = duration_cast<milliseconds>(current_time - start_time).count();
     while(true) {
         videoCapture >> frame;

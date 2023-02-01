@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include <opencv2/core/utility.hpp>
+#include <opencv2/videoio.hpp>
 
 #include "arucolocalization.hpp"
 #include "read_save_camera_parameters.hpp"
@@ -10,8 +11,8 @@
 cv::Point2f calibrate(const std::vector<std::vector<cv::Point2f>>& markerCorners,
                       float markerSize, cv::Point2f& std);
 
-const const[] about = "Calibrate camera using Aruco marker.";
-const const[] keys  =
+const char about[] = "Calibrate camera using Aruco marker.";
+const char keys[]  =
         "{h help ? usage |       | Print help message}"
         "{d              |       | dictionary: DICT_4X4_50=0, DICT_4X4_100=1, DICT_4X4_250=2,"
         "DICT_4X4_1000=3, DICT_5X5_50=4, DICT_5X5_100=5, DICT_5X5_250=6, DICT_5X5_1000=7, "
